@@ -40,3 +40,12 @@ First-time setup (migrations):
 ```bash
 docker compose exec app php artisan migrate
 ```
+
+### After pulling new code
+
+`queue` and `scheduler` are long-running processes that boot the app once
+and keep it in memory — they won't pick up code changes until restarted:
+
+```bash
+docker compose restart queue scheduler
+```

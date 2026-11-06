@@ -15,6 +15,16 @@
                         {{ __('Dashboard') }}
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('record.*') ? 'active' : '' }}" href="{{ route('record.edit') }}">
+                        {{ __('Record') }}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('willreceivers.*') ? 'active' : '' }}" href="{{ route('willreceivers.edit') }}">
+                        {{ __('Trusted Contacts') }}
+                    </a>
+                </li>
             </ul>
 
             <ul class="navbar-nav">

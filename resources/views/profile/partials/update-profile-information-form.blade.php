@@ -47,6 +47,17 @@
             @endif
         </div>
 
+        <div class="mb-3">
+            <x-input-label for="timezone" :value="__('Timezone')" />
+            <select id="timezone" name="timezone" class="form-select">
+                @foreach (timezone_identifiers_list() as $tz)
+                    <option value="{{ $tz }}" @selected(old('timezone', $user->timezone) === $tz)>{{ $tz }}</option>
+                @endforeach
+            </select>
+            <div class="form-text">Used to display check-in due dates in your local time.</div>
+            <x-input-error class="mt-2" :messages="$errors->get('timezone')" />
+        </div>
+
         <div class="d-flex align-items-center gap-3">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

@@ -24,8 +24,8 @@ recorded information to pre-designated trusted contacts.
 
 ## 3. Core concepts & data model (conceptual, not final schema)
 
-- **Owner** — account: email, auth credential, status (`active`, `at_risk`,
-  `disappeared`), timestamps.
+- **Owner** — account: email, auth credential, status (`setup`, `active`,
+  `at_risk`, `daily_retry`, `disappeared`), timestamps.
 - **Record** — a single block of plain text per owner (not multiple
   records in v1 — one owner has exactly one text blob they keep up to
   date). Future: typed asset entries, file attachments, multiple records.
@@ -39,6 +39,12 @@ recorded information to pre-designated trusted contacts.
 ## 4. Owner check-in lifecycle (state machine)
 
 ```
+SETUP
+  → the starting state for every new owner. No check-in clock runs yet.
+  → once the owner has written their record AND added both willreceivers
+    → ACTIVE, with the first 30-day check-in window starting now (not
+      from registration)
+
 ACTIVE
   → every 30 days: send check-in email with confirmation link
   → owner clicks within window → stays ACTIVE, next check-in in 30 days
@@ -108,9 +114,11 @@ same 3-day window tracked for completeness, but there's no #3 to escalate to
   person, not a secret reachable by anyone who reads this email.
 - Add/edit the 2 willreceiver email addresses.
 - Receive check-in emails per the state machine in §4; click to confirm.
+  (No check-in emails are sent while still in `SETUP` — there's nothing
+  to confirm yet.)
 - See their own current status in-app (last check-in, next check-in due,
-  current state — `ACTIVE` / `AT_RISK` / `DAILY_RETRY` / `DISAPPEARED`).
-  The app reflects the same state the emails do, and the owner can check
+  current state — `SETUP` / `ACTIVE` / `AT_RISK` / `DAILY_RETRY` /
+  `DISAPPEARED`). The app reflects the same state the emails do, and the owner can check
   in from inside the app (not only via the emailed link) to return to
   `ACTIVE` from any non-disappeared state.
 - Recover from `DISAPPEARED` by logging in normally (v1: standard login is
