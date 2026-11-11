@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CheckIn;
-use App\Services\CheckInLifecycle;
+use App\Domain\Models\CheckIn;
+use App\Domain\Services\CheckInLifecycle;
 use Illuminate\View\View;
 
 class CheckInConfirmationController extends Controller

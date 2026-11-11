@@ -5,7 +5,7 @@
 </head>
 <body style="font-family: sans-serif; color: #212529; max-width: 540px; margin: 0 auto; padding: 24px;">
 
-@if ($stage === \App\Enums\CheckInStage::Monthly)
+@if ($stage === \App\Domain\Enums\CheckInStage::Monthly)
     <p>Hi {{ $owner->name }},</p>
 
     <p>
@@ -13,7 +13,7 @@
         button below to confirm you're OK — this keeps your stored information
         from being shared with your contacts.
     </p>
-@elseif ($stage === \App\Enums\CheckInStage::AtRisk)
+@elseif ($stage === \App\Domain\Enums\CheckInStage::AtRisk)
     <p>Hi {{ $owner->name }},</p>
 
     <p>

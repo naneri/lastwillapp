@@ -15,11 +15,11 @@
         <div class="card-body">
             @php
                 $statusLabel = match ($owner->status) {
-                    \App\Enums\OwnerStatus::Setup => ['Setup', 'secondary'],
-                    \App\Enums\OwnerStatus::Active => ['Active', 'success'],
-                    \App\Enums\OwnerStatus::AtRisk => ['Awaiting confirmation', 'warning'],
-                    \App\Enums\OwnerStatus::DailyRetry => ['Urgent — confirm now', 'danger'],
-                    \App\Enums\OwnerStatus::Disappeared => ['Marked as disappeared', 'dark'],
+                    \App\Domain\Enums\OwnerStatus::Setup => ['Setup', 'secondary'],
+                    \App\Domain\Enums\OwnerStatus::Active => ['Active', 'success'],
+                    \App\Domain\Enums\OwnerStatus::AtRisk => ['Awaiting confirmation', 'warning'],
+                    \App\Domain\Enums\OwnerStatus::DailyRetry => ['Urgent — confirm now', 'danger'],
+                    \App\Domain\Enums\OwnerStatus::Disappeared => ['Marked as disappeared', 'dark'],
                 };
             @endphp
 
@@ -28,13 +28,13 @@
                 <span class="badge bg-{{ $statusLabel[1] }}">{{ $statusLabel[0] }}</span>
             </h3>
 
-            @if ($owner->status === \App\Enums\OwnerStatus::Setup)
+            @if ($owner->status === \App\Domain\Enums\OwnerStatus::Setup)
                 <p class="text-muted mb-0">
                     Monitoring hasn't started yet. Finish the two steps below —
                     your 30-day check-in cycle begins as soon as both are done.
                 </p>
             @else
-                @if ($owner->status === \App\Enums\OwnerStatus::Disappeared)
+                @if ($owner->status === \App\Domain\Enums\OwnerStatus::Disappeared)
                     <p class="text-muted">
                         We weren't able to confirm you were OK, so your information may
                         already have been shared with your emergency contacts. If
@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    @if ($owner->status === \App\Enums\OwnerStatus::Setup)
+    @if ($owner->status === \App\Domain\Enums\OwnerStatus::Setup)
         <div class="card shadow-sm mb-3">
             <div class="card-body">
                 <h3 class="h6">Finish setup</h3>

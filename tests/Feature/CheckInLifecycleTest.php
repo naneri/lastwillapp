@@ -2,12 +2,12 @@
 
 namespace Tests\Feature;
 
-use App\Enums\OwnerStatus;
-use App\Mail\CheckInMail;
-use App\Mail\RevealMail;
+use App\Domain\Enums\OwnerStatus;
+use App\Domain\Mail\CheckInMail;
+use App\Domain\Mail\RevealMail;
 use App\Models\User;
-use App\Models\Willreceiver;
-use App\Services\CheckInLifecycle;
+use App\Domain\Models\Willreceiver;
+use App\Domain\Services\CheckInLifecycle;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;

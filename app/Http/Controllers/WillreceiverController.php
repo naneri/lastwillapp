@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\CheckInLifecycle;
+use App\Domain\Services\CheckInLifecycle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Mail;
+namespace App\Domain\Mail;
 
-use App\Models\Reveal;
+use App\Domain\Models\Reveal;
+use App\Domain\Models\Willreceiver;
 use App\Models\User;
-use App\Models\Willreceiver;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;

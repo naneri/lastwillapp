@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\Domain\Services;
 
-use App\Enums\CheckInStage;
-use App\Enums\OwnerStatus;
-use App\Mail\CheckInMail;
-use App\Mail\RevealMail;
-use App\Models\CheckIn;
+use App\Domain\Enums\CheckInStage;
+use App\Domain\Enums\OwnerStatus;
+use App\Domain\Mail\CheckInMail;
+use App\Domain\Mail\RevealMail;
+use App\Domain\Models\CheckIn;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Mail;

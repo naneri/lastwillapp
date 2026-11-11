@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Mail;
+namespace App\Domain\Mail;
 
-use App\Enums\CheckInStage;
-use App\Models\CheckIn;
+use App\Domain\Enums\CheckInStage;
+use App\Domain\Models\CheckIn;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
