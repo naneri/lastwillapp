@@ -34,7 +34,7 @@ class PaddleWebhookController extends Controller
         match ($payload['event_type'] ?? null) {
             'subscription.created', 'subscription.activated' => $this->handleActivated($owner, $data, $lifecycle),
             'subscription.updated' => $this->handleUpdated($owner, $data, $lifecycle),
-            'subscription.canceled' => $lifecycle->upgrade($owner, Plan::Free),
+            'subscription.canceled' => $this->handleCanceled($owner, $lifecycle),
             default => null,
         };
 
@@ -45,7 +45,16 @@ class PaddleWebhookController extends Controller
     {
         $userId = $data['custom_data']['user_id'] ?? null;
 
-        return $userId ? User::find($userId) : null;
+        if ($userId) {
+            return User::find($userId);
+        }
+
+        // Updates/cancellations on an existing subscription don't carry
+        // custom_data — fall back to matching on the subscription ID we
+        // stored when it was first created.
+        $subscriptionId = $data['id'] ?? null;
+
+        return $subscriptionId ? User::where('paddle_subscription_id', $subscriptionId)->first() : null;
     }
 
     protected function handleActivated(User $owner, array $data, PlanLifecycle $lifecycle): void
@@ -56,31 +65,45 @@ class PaddleWebhookController extends Controller
             return;
         }
 
-        if (isset($data['customer_id'])) {
-            $owner->paddle_customer_id = $data['customer_id'];
-            $owner->save();
-        }
+        $owner->paddle_customer_id = $data['customer_id'] ?? $owner->paddle_customer_id;
+        $owner->paddle_subscription_id = $data['id'] ?? $owner->paddle_subscription_id;
+        $owner->save();
 
         $lifecycle->upgrade($owner, $plan);
+    }
+
+    protected function handleCanceled(User $owner, PlanLifecycle $lifecycle): void
+    {
+        $owner->paddle_subscription_id = null;
+        $owner->save();
+
+        $lifecycle->upgrade($owner, Plan::Free);
     }
 
     protected function handleUpdated(User $owner, array $data, PlanLifecycle $lifecycle): void
     {
         $scheduledChange = $data['scheduled_change'] ?? null;
 
-        if (! $scheduledChange) {
+        if ($scheduledChange) {
+            $targetPlan = $scheduledChange['action'] === 'cancel'
+                ? Plan::Free
+                : $this->planFromPriceId($data['items'][0]['price']['id'] ?? null);
+
+            if ($targetPlan) {
+                $lifecycle->scheduleDowngrade($owner, $targetPlan, CarbonImmutable::parse($scheduledChange['effective_at']));
+            }
+
             return;
         }
 
-        $targetPlan = $scheduledChange['action'] === 'cancel'
-            ? Plan::Free
-            : $this->planFromPriceId($data['items'][0]['price']['id'] ?? null);
+        // No scheduled change: an immediate item swap — e.g. the upgrade in
+        // BillingController::upgrade(), or a change made directly in the
+        // Paddle dashboard. Keep the local plan in sync either way.
+        $plan = $this->planFromPriceId($data['items'][0]['price']['id'] ?? null);
 
-        if (! $targetPlan) {
-            return;
+        if ($plan) {
+            $lifecycle->upgrade($owner, $plan);
         }
-
-        $lifecycle->scheduleDowngrade($owner, $targetPlan, CarbonImmutable::parse($scheduledChange['effective_at']));
     }
 
     protected function planFromPriceId(?string $priceId): ?Plan

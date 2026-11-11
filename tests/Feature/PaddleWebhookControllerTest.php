@@ -50,6 +50,7 @@ class PaddleWebhookControllerTest extends TestCase
         $response = $this->signedPost([
             'event_type' => 'subscription.created',
             'data' => [
+                'id' => 'sub_123',
                 'customer_id' => 'ctm_123',
                 'custom_data' => ['user_id' => $owner->id],
                 'items' => [['price' => ['id' => 'pri_basic_123']]],
@@ -61,6 +62,49 @@ class PaddleWebhookControllerTest extends TestCase
         $owner->refresh();
         $this->assertSame(Plan::Basic, $owner->plan);
         $this->assertSame('ctm_123', $owner->paddle_customer_id);
+        $this->assertSame('sub_123', $owner->paddle_subscription_id);
+    }
+
+    public function test_subscription_updated_with_no_scheduled_change_syncs_plan_immediately(): void
+    {
+        Config::set('paddle.webhook_secret', 'test-secret');
+        Config::set('paddle.prices.pro', 'pri_pro_123');
+
+        // No custom_data on this event — resolution must fall back to
+        // matching the stored subscription ID, same as Paddle sends for an
+        // update to an existing subscription (e.g. our own upgrade() call).
+        $owner = User::factory()->create(['plan' => Plan::Basic]);
+        $owner->forceFill(['paddle_subscription_id' => 'sub_123'])->save();
+
+        $response = $this->signedPost([
+            'event_type' => 'subscription.updated',
+            'data' => [
+                'id' => 'sub_123',
+                'items' => [['price' => ['id' => 'pri_pro_123']]],
+            ],
+        ], 'test-secret');
+
+        $response->assertNoContent();
+        $this->assertSame(Plan::Pro, $owner->fresh()->plan);
+    }
+
+    public function test_subscription_canceled_clears_subscription_id_and_reverts_to_free(): void
+    {
+        Config::set('paddle.webhook_secret', 'test-secret');
+
+        $owner = User::factory()->create(['plan' => Plan::Basic]);
+        $owner->forceFill(['paddle_subscription_id' => 'sub_123'])->save();
+
+        $response = $this->signedPost([
+            'event_type' => 'subscription.canceled',
+            'data' => ['id' => 'sub_123'],
+        ], 'test-secret');
+
+        $response->assertNoContent();
+
+        $owner->refresh();
+        $this->assertSame(Plan::Free, $owner->plan);
+        $this->assertNull($owner->paddle_subscription_id);
     }
 
     public function test_subscription_updated_with_scheduled_cancel_schedules_a_downgrade(): void

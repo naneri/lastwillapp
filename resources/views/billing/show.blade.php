@@ -7,6 +7,10 @@
         <div class="alert alert-warning">Billing isn't set up on this server yet.</div>
     @elseif (session('status') === 'billing-portal-unavailable')
         <div class="alert alert-danger">Couldn't reach the billing portal right now — please try again shortly.</div>
+    @elseif (session('status') === 'billing-upgrade-failed')
+        <div class="alert alert-danger">Couldn't update your plan right now — please try again shortly.</div>
+    @elseif (session('status') === 'plan-updated')
+        <div class="alert alert-success">Your plan has been updated.</div>
     @endif
 
     @if ($owner->plan === \App\Domain\Enums\Plan::Free)
@@ -49,15 +53,29 @@
                         </ul>
 
                         <div class="mt-auto">
-                            @if ($owner->plan !== $plan && $plan !== \App\Domain\Enums\Plan::Free)
-                                <button
-                                    type="button"
-                                    class="btn btn-dark w-100 paddle-checkout-button"
-                                    data-price-id="{{ $prices[$plan->value] ?? '' }}"
-                                    @disabled(blank($prices[$plan->value] ?? null))
-                                >
-                                    {{ $owner->plan->willReceiverLimit() < $plan->willReceiverLimit() ? 'Upgrade' : 'Switch' }}
-                                </button>
+                            {{-- Only ever offer a button for a strictly higher tier than the
+                                 owner's current one — downgrades go through the Paddle customer
+                                 portal below (SPEC.md §12: deferred to period end, not an
+                                 in-app button). --}}
+                            @if ($plan->willReceiverLimit() > $owner->plan->willReceiverLimit())
+                                @if ($owner->paddle_subscription_id)
+                                    {{-- Already paying: change the price on the existing
+                                         subscription (prorated, immediate) instead of opening a
+                                         second, parallel checkout. --}}
+                                    <form method="POST" action="{{ route('billing.upgrade', $plan->value) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-dark w-100">Upgrade</button>
+                                    </form>
+                                @else
+                                    <button
+                                        type="button"
+                                        class="btn btn-dark w-100 paddle-checkout-button"
+                                        data-price-id="{{ $prices[$plan->value] ?? '' }}"
+                                        @disabled(blank($prices[$plan->value] ?? null))
+                                    >
+                                        Upgrade
+                                    </button>
+                                @endif
                             @endif
                         </div>
                     </div>

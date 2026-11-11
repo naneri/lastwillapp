@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Enums\Plan;
+use App\Domain\Services\PlanLifecycle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -24,6 +25,42 @@ class BillingController extends Controller
     }
 
     /**
+     * Upgrades an owner who's already on a paid plan to a higher one, by
+     * changing the price on their existing Paddle subscription (prorated,
+     * immediate — SPEC.md §12) rather than opening a new checkout, which
+     * would create a second, parallel subscription instead of replacing
+     * the first. First-time subscribers (no existing subscription) go
+     * through the Paddle.js checkout overlay instead — see billing.show.
+     */
+    public function upgrade(Request $request, string $plan, PlanLifecycle $lifecycle): RedirectResponse
+    {
+        $owner = $request->user();
+        $targetPlan = Plan::tryFrom($plan);
+        $apiKey = config('paddle.api_key');
+        $priceId = $targetPlan ? config("paddle.prices.{$targetPlan->value}") : null;
+
+        if (! $targetPlan || ! $priceId || ! $apiKey || ! $owner->paddle_subscription_id) {
+            return redirect()->route('billing.show')
+                ->with('status', 'billing-not-configured');
+        }
+
+        $response = Http::withToken($apiKey)
+            ->patch($this->apiBase()."/subscriptions/{$owner->paddle_subscription_id}", [
+                'items' => [['price_id' => $priceId, 'quantity' => 1]],
+                'proration_billing_mode' => 'prorated_immediately',
+            ]);
+
+        if (! $response->successful()) {
+            return redirect()->route('billing.show')
+                ->with('status', 'billing-upgrade-failed');
+        }
+
+        $lifecycle->upgrade($owner, $targetPlan);
+
+        return redirect()->route('billing.show')->with('status', 'plan-updated');
+    }
+
+    /**
      * Redirects to Paddle's hosted customer portal, where owners manage
      * downgrades/cancellations themselves (SPEC.md §12) — we don't build
      * that UI ourselves.
@@ -38,10 +75,10 @@ class BillingController extends Controller
                 ->with('status', 'billing-not-configured');
         }
 
-        $base = config('paddle.sandbox') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com';
-
+        // Paddle requires a JSON object body, even an empty one — an empty
+        // PHP array encodes to `[]`, not `{}`, and Paddle rejects that.
         $response = Http::withToken($apiKey)
-            ->post("{$base}/customers/{$owner->paddle_customer_id}/portal-sessions");
+            ->post($this->apiBase()."/customers/{$owner->paddle_customer_id}/portal-sessions", (object) []);
 
         $url = $response->json('data.urls.general.overview');
 
@@ -51,5 +88,10 @@ class BillingController extends Controller
         }
 
         return redirect()->away($url);
+    }
+
+    protected function apiBase(): string
+    {
+        return config('paddle.sandbox') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com';
     }
 }
