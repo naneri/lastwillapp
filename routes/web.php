@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CheckInConfirmationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OwnerCheckInController;
+use App\Http\Controllers\PaddleWebhookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\RevealController;
@@ -29,11 +31,16 @@ Route::middleware('auth')->group(function () {
     Route::put('/will-receivers', [WillReceiverController::class, 'update'])->name('will-receivers.update');
 
     Route::post('/checkin', [OwnerCheckInController::class, 'store'])->name('owner-checkin.store');
+
+    Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
+    Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
 });
 
 Route::get('/checkin/{token}', [CheckInConfirmationController::class, 'show'])->name('checkin.confirm');
 
 Route::get('/reveal/{token}', [RevealController::class, 'show'])->name('reveal.show');
 Route::post('/reveal/{token}/confirm', [RevealController::class, 'confirm'])->name('reveal.confirm');
+
+Route::post('/webhooks/paddle', [PaddleWebhookController::class, 'handle'])->name('webhooks.paddle');
 
 require __DIR__.'/auth.php';

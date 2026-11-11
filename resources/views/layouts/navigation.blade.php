@@ -25,6 +25,11 @@
                         {{ __('Trusted Contacts') }}
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('billing.*') ? 'active' : '' }}" href="{{ route('billing.show') }}">
+                        {{ __('Plan & Billing') }}
+                    </a>
+                </li>
             </ul>
 
             <ul class="navbar-nav">

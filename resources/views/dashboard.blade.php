@@ -11,6 +11,24 @@
         </div>
     @endif
 
+    @if ($owner->plan === \App\Domain\Enums\Plan::Free && ! $owner->hasActiveAccess())
+        <div class="alert alert-danger">
+            Your free period ended on {{ $owner->freeTierEndsAt()->toFormattedDateString() }} —
+            monitoring is paused until you
+            <a href="{{ route('billing.show') }}">subscribe to a paid plan</a>.
+        </div>
+    @endif
+
+    @if ($willReceiverCount > $willReceiverLimit)
+        <div class="alert alert-warning">
+            You have {{ $willReceiverCount }} trusted contacts but your plan only
+            supports {{ $willReceiverLimit }} — the extra
+            {{ Str::plural('one', $willReceiverCount - $willReceiverLimit) }} won't be
+            notified. <a href="{{ route('will-receivers.edit') }}">Remove some</a> or
+            <a href="{{ route('billing.show') }}">upgrade</a>.
+        </div>
+    @endif
+
     <div class="card shadow-sm mb-3">
         <div class="card-body">
             @php
@@ -68,8 +86,8 @@
                         <a href="{{ route('record.edit') }}">Write your record</a>
                     </li>
                     <li>
-                        {{ $willReceiverCount === 2 ? '✓' : '○' }}
-                        <a href="{{ route('will-receivers.edit') }}">Add both trusted contacts</a>
+                        {{ $willReceiverCount >= 1 ? '✓' : '○' }}
+                        <a href="{{ route('will-receivers.edit') }}">Add a trusted contact</a>
                     </li>
                 </ul>
             </div>

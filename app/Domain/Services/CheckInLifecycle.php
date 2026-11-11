@@ -49,10 +49,12 @@ class CheckInLifecycle
         // Query fresh rather than via $owner->record — a cached relation
         // (e.g. loaded as null earlier in the same request) would go stale
         // the moment the record is actually saved.
+        // SPEC.md §10.6 — activating only ever needs 1 willreceiver,
+        // regardless of plan, so a Free owner (1 slot) can still activate.
         $hasRecord = filled($owner->record()->first()?->body);
-        $hasBothWillReceivers = $owner->willReceivers()->count() === 2;
+        $hasWillReceiver = $owner->willReceivers()->count() >= 1;
 
-        if (! $hasRecord || ! $hasBothWillReceivers) {
+        if (! $hasRecord || ! $hasWillReceiver) {
             return;
         }
 
@@ -83,6 +85,12 @@ class CheckInLifecycle
 
     protected function evaluateOwner(User $owner, CarbonImmutable $now): void
     {
+        // A Free owner past their one-time 100-day window (SPEC.md §12)
+        // gets no further check-ins/escalations until they subscribe.
+        if (! $owner->hasActiveAccess($now)) {
+            return;
+        }
+
         $openCheckIn = $owner->checkIns()->whereNull('confirmed_at')->latest('sent_at')->first();
 
         if ($openCheckIn) {
@@ -202,7 +210,9 @@ class CheckInLifecycle
 
     protected function triggerReveal(User $owner, int $rank, CarbonImmutable $now): void
     {
-        $willReceiver = $owner->willReceivers()->where('rank', $rank)->first();
+        // Scoped to activeWillReceivers so a receiver excluded by a
+        // downgrade (SPEC.md §12) never gets revealed to.
+        $willReceiver = $owner->activeWillReceivers()->where('rank', $rank)->first();
 
         if (! $willReceiver) {
             return;
@@ -218,10 +228,13 @@ class CheckInLifecycle
     }
 
     /**
-     * Called periodically by app:process-escalations. Escalates to
-     * willreceiver #2 once #1's 3-day confirmation window has lapsed
-     * without a "mark as received" (SPEC.md §5). #1's link/reveal stays
-     * valid regardless (SPEC.md §10.1) — this only adds #2, never revokes.
+     * Called periodically by app:process-escalations. Cascades through the
+     * owner's willreceivers in rank order once each one's 3-day
+     * confirmation window has lapsed without a "mark as received"
+     * (SPEC.md §5) — up to however many ranks their plan allows (1 for
+     * Free, 2 for Basic, 3 for Pro). Every earlier receiver's link/reveal
+     * stays valid regardless (SPEC.md §10.1) — this only adds the next
+     * rank, never revokes an earlier one.
      */
     public function processEscalations(?CarbonImmutable $now = null): void
     {
@@ -231,29 +244,37 @@ class CheckInLifecycle
             ->where('status', OwnerStatus::Disappeared)
             ->chunkById(100, function ($owners) use ($now) {
                 foreach ($owners as $owner) {
-                    $this->evaluateEscalation($owner, $now);
+                    if ($owner->hasActiveAccess($now)) {
+                        $this->evaluateEscalation($owner, $now);
+                    }
                 }
             });
     }
 
     protected function evaluateEscalation(User $owner, CarbonImmutable $now): void
     {
-        $firstReveal = $owner->reveals()->whereHas('willReceiver', fn ($q) => $q->where('rank', 1))->first();
+        $limit = $owner->plan->willReceiverLimit();
 
-        if (! $firstReveal || $firstReveal->isConfirmed()) {
+        $latestReveal = $owner->reveals()
+            ->whereHas('willReceiver', fn ($q) => $q->where('rank', '<=', $limit))
+            ->get()
+            ->sortByDesc(fn ($reveal) => $reveal->willReceiver->rank)
+            ->first();
+
+        if (! $latestReveal || $latestReveal->isConfirmed()) {
             return;
         }
 
-        if ($firstReveal->sent_at->addDays(3)->gt($now)) {
+        if ($latestReveal->sent_at->addDays(3)->gt($now)) {
             return;
         }
 
-        $secondAlreadySent = $owner->reveals()->whereHas('willReceiver', fn ($q) => $q->where('rank', 2))->exists();
+        $nextRank = $latestReveal->willReceiver->rank + 1;
 
-        if ($secondAlreadySent) {
+        if ($nextRank > $limit) {
             return;
         }
 
-        $this->triggerReveal($owner, rank: 2, now: $now);
+        $this->triggerReveal($owner, rank: $nextRank, now: $now);
     }
 }

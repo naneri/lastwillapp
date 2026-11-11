@@ -20,6 +20,10 @@
     view what they left for you, and let us know once you've seen it.
 </p>
 
+@if ($willReceiver->message)
+    <p style="border-left: 3px solid #dee2e6; padding-left: 12px; white-space: pre-line;">{{ $willReceiver->message }}</p>
+@endif
+
 <p style="margin: 32px 0;">
     <a href="{{ $viewUrl }}"
        style="background: #1b1b18; color: #fff; padding: 12px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">

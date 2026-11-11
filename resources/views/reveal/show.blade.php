@@ -28,6 +28,15 @@
                 </div>
             </div>
 
+            @if ($reveal->willReceiver->message)
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <h2 class="h6">A message for you</h2>
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ $reveal->willReceiver->message }}</p>
+                    </div>
+                </div>
+            @endif
+
             @if ($reveal->isConfirmed())
                 <div class="alert alert-success">
                     You marked this as received on {{ $reveal->confirmed_at->format('F j, Y H:i') }}.

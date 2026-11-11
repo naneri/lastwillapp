@@ -49,3 +49,28 @@ and keep it in memory — they won't pick up code changes until restarted:
 ```bash
 docker compose restart queue scheduler
 ```
+
+## Billing (Paddle)
+
+Plans and pricing are described in [SPEC.md §12](SPEC.md). The billing
+page and webhook work fine locally with no configuration — they just
+no-op (upgrade buttons stay disabled, the webhook rejects everything since
+there's no secret to check signatures against). To actually go live:
+
+1. Create a Paddle account and, in **Developer tools → Authentication**,
+   grab a client-side token and a server-side API key.
+2. Create two products/prices (Basic, Pro) in the Paddle dashboard and
+   copy their price IDs.
+3. Create a webhook pointed at `https://<your-domain>/webhooks/paddle`
+   subscribed to `subscription.created`, `subscription.activated`,
+   `subscription.updated`, and `subscription.canceled`; copy its secret.
+4. Set `PADDLE_SANDBOX`, `PADDLE_CLIENT_TOKEN`, `PADDLE_API_KEY`,
+   `PADDLE_WEBHOOK_SECRET`, `PADDLE_PRICE_BASIC`, and `PADDLE_PRICE_PRO`
+   in `.env` (see `.env.example`).
+
+This isn't integrated via `laravel/cashier-paddle` — its latest release
+still requires Guzzle `^7.4.5`, which conflicts with the Guzzle 8 that
+Laravel 13 already pulls in here. Instead, `app/Http/Controllers/BillingController.php`
+and `PaddleWebhookController.php` talk to Paddle directly (Paddle.js for
+checkout, Paddle's REST API + manually-verified webhook signatures for
+everything server-side).

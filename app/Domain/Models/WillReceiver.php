@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[Fillable(['rank', 'name', 'email'])]
+#[Fillable(['rank', 'name', 'email', 'message'])]
 class WillReceiver extends Model
 {
     public function user(): BelongsTo

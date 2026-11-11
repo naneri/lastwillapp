@@ -18,19 +18,22 @@ recorded information to pre-designated trusted contacts.
 - **Willowner** — the person who owns the information and wants it delivered
   if something happens to them. Has an account.
 - **Willreceiver** — a trusted contact designated by the willowner to receive
-  the information. Exactly 2 per willowner (first and second priority). Does
-  **not** need an account — identified by email, interacts via emailed
-  magic links.
+  the information, ranked by priority. How many a willowner can have depends
+  on their plan (§12): 1 for Free, 2 for Basic, 3 for Pro. Does **not** need
+  an account — identified by email, interacts via emailed magic links.
 
 ## 3. Core concepts & data model (conceptual, not final schema)
 
 - **Owner** — account: email, auth credential, status (`setup`, `active`,
-  `at_risk`, `daily_retry`, `disappeared`), timestamps.
+  `at_risk`, `daily_retry`, `disappeared`), plan (`free`, `basic`, `pro`,
+  see §12), timestamps.
 - **Record** — a single block of plain text per owner (not multiple
   records in v1 — one owner has exactly one text blob they keep up to
   date). Future: typed asset entries, file attachments, multiple records.
-- **Willreceiver slot** — exactly 2 per owner, ranked (1st, 2nd), each just
-  an email address (+ optional name). No account required.
+- **Willreceiver slot** — up to the owner's plan limit (§12), ranked (1st,
+  2nd, 3rd), each an email address (+ optional name) and, for Pro owners
+  only, an optional custom message sent alongside the record when that
+  specific receiver is revealed to. No account required.
 - **CheckIn** — a scheduled prompt sent to the owner, with its outcome
   (confirmed / missed) and timestamp.
 - **EscalationState** — tracks where in the disappearance/reveal pipeline an
@@ -41,7 +44,9 @@ recorded information to pre-designated trusted contacts.
 ```
 SETUP
   → the starting state for every new owner. No check-in clock runs yet.
-  → once the owner has written their record AND added both willreceivers
+  → once the owner has written their record AND added at least 1
+    willreceiver (regardless of plan — Free owners only ever get 1 slot
+    anyway)
     → ACTIVE, with the first 30-day check-in window starting now (not
       from registration)
 
@@ -71,17 +76,20 @@ Every check-in email contains a single-use, time-limited confirmation link.
 
 ```
 DISAPPEARED
-  → email Willreceiver #1: link to a page to view/download all records,
-    plus a "mark as received" action
+  → email Willreceiver #1: link to a page to view/download all records
+    (plus, for Pro owners, #1's own custom message), plus a "mark as
+    received" action
   → receiver confirms within 3 days → DONE (receiver #1 acknowledged)
   → receiver does not confirm within 3 days → escalate to Willreceiver #2
        (receiver #1's link presumably still works if they come back later —
        TBD, see open questions)
 
-Willreceiver #2 gets the same flow (view/download + mark as received),
-same 3-day window tracked for completeness, but there's no #3 to escalate to
-— if #2 also doesn't confirm, the info remains available via their link
-  indefinitely (nothing further to escalate to).
+Each subsequent willreceiver (#2, and #3 for Pro owners) gets the same flow
+(view/download + their own custom message if set + mark as received) and
+the same 3-day window, cascading in rank order through however many
+willreceivers the owner's plan allows them to have. The last-ranked
+willreceiver has no one left to escalate to — if they also don't confirm,
+the info remains available via their link indefinitely.
 ```
 
 ## 6. Self-recovery
@@ -112,7 +120,10 @@ same 3-day window tracked for completeness, but there's no #3 to escalate to
   is taped under the keyboard" / "ask my brother, he knows the safe combo")
   — i.e. point to a location or person reachable by a willreceiver in
   person, not a secret reachable by anyone who reads this email.
-- Add/edit the 2 willreceiver email addresses.
+- Add/edit willreceiver email addresses, up to the limit for their current
+  plan (1 for Free, 2 for Basic, 3 for Pro — see §12). Pro owners can also
+  write an optional custom message per willreceiver, sent alongside the
+  record if and when that specific receiver is revealed to.
 - Receive check-in emails per the state machine in §4; click to confirm.
   (No check-in emails are sent while still in `SETUP` — there's nothing
   to confirm yet.)
@@ -124,6 +135,9 @@ same 3-day window tracked for completeness, but there's no #3 to escalate to
 - Recover from `DISAPPEARED` by logging in normally (v1: standard login is
   sufficient; 2FA for this specific action is planned as a future
   hardening step, not required for v1).
+- See their current plan, upgrade or downgrade/cancel it, and (while on
+  Free) see how many days remain before the free period ends. See §12 for
+  the full billing model.
 
 ### Willreceiver-facing
 - Receive an email with a secure link (no account needed).
@@ -137,6 +151,10 @@ same 3-day window tracked for completeness, but there's no #3 to escalate to
   willreceiver reveal links.
 - Audit trail: log every check-in sent/confirmed/missed and every reveal
   event, for the owner's own visibility and for dispute resolution.
+- Scheduler to send the one-time free-tier expiry-warning email (§12) and
+  to pause monitoring for Free owners whose 100 days have elapsed.
+- Webhook handler for Paddle subscription events (created, updated,
+  canceled, payment failed) to keep the owner's local plan in sync.
 
 ## 8. Non-functional requirements
 
@@ -173,9 +191,13 @@ from day one even if the MVP implementation is simple:
 
 - File attachments / structured asset schemas (text only for now, per
   owner's answer — may come later).
-- More than 2 willreceivers.
+- More than 3 willreceivers (Pro's cap).
 - Legal document generation (this is not a will-drafting tool).
-- Any payment/billing.
+- Monthly billing for Basic/Pro — both are annual-only (§12).
+- A custom-built in-app billing UI beyond the thin wrapper described in
+  §12 — plan changes and cancellation happen through Paddle's own hosted
+  checkout/customer-portal pages, not pages we build ourselves.
+- More than one payment processor / region-specific alternatives.
 
 ## 10. Resolved decisions (from v0.1 review)
 
@@ -202,14 +224,78 @@ from day one even if the MVP implementation is simple:
    `AT_RISK` / `DAILY_RETRY` / `DISAPPEARED`) is always visible in the app,
    and checking in can be done either via the emailed link or directly in
    the app.
+6. **Activating from `SETUP` needs only 1 willreceiver, not a plan-specific
+   count** — generalizes the old "both willreceivers" rule so Free owners
+   (1 slot) can still activate; Basic/Pro owners can add their remaining
+   slots at any time, before or after activating.
 
-## 11. Remaining open questions
+## 12. Billing & Tiers
+
+### Tiers
+
+| Tier  | Price         | Willreceivers | Extras |
+|-------|---------------|----------------|--------|
+| Free  | $0, one-time 100-day window from signup | 1 | — |
+| Basic | $5/year       | 2              | (current app behavior) |
+| Pro   | $20/year      | 3              | Custom per-willreceiver message, sent alongside the record when that receiver is revealed to |
+
+### Free tier lifecycle
+- Every new owner starts on Free. The 100-day window starts at account
+  registration — independent of the SETUP→ACTIVE 30-day check-in clock
+  (§4), which only starts once setup is finished.
+- 7 days before the window ends (day 93), send a one-time warning email:
+  check-in monitoring will stop on [date] unless the owner subscribes.
+- When the window ends (day 100), if the owner is still on Free:
+  monitoring pauses — no more check-in, escalation, or reveal emails are
+  sent — until they subscribe to Basic or Pro. The record and willreceiver
+  data are preserved, not deleted.
+- The 100-day window is one-time per account. An owner who subscribes and
+  later cancels/downgrades back to Free does **not** get a fresh window —
+  they land in the same paused/unpaid state as an owner whose Free window
+  already expired.
+
+### Upgrades (Free→Basic, Free→Pro, Basic→Pro)
+- Take effect immediately, including the new willreceiver limit.
+- Billed immediately, prorated for unused time on the previous paid plan
+  via Paddle's `prorated_immediately` mode — the owner is credited for
+  time already paid for, never charged twice for the same period.
+
+### Downgrades (Pro→Basic, Basic→Free/cancel, Pro→Free/cancel)
+- Take effect at the end of the current paid period, not immediately —
+  avoids issuing mid-cycle refunds. The owner keeps their current tier's
+  access and limits until then.
+- When the downgrade actually takes effect, if the owner has more
+  willreceivers than the new tier allows, none are deleted. The excess
+  (lowest rank first) are excluded from future reveals and can't be
+  edited until the owner manually trims down to the new limit; the
+  dashboard shows a banner explaining this.
+- A Pro owner's custom per-willreceiver messages are never deleted by a
+  downgrade, even for an excluded receiver — if the owner upgrades back to
+  Pro, or trims down so that receiver becomes active again, the message
+  is still there.
+
+### Payment processor
+- **Paddle**, used as merchant of record — it handles card processing,
+  tax/VAT compliance, and payout to the owner's bank account. This
+  matters because Stripe does not support sellers based in Kyrgyzstan
+  directly.
+- Integrated directly against Paddle's Billing API and Paddle.js, not
+  via `laravel/cashier-paddle` — its latest release still requires Guzzle
+  `^7.4.5`, which conflicts with the Guzzle 8 that Laravel 13 already
+  pulls in here.
+- Subscription management is a thin wrapper, not a custom-built flow:
+  upgrading opens Paddle's hosted checkout overlay; downgrading/canceling
+  links out to Paddle's hosted customer portal. The app reacts to Paddle's
+  webhooks to update the owner's plan locally.
+
+## 13. Remaining open questions
 
 - Exact wording/subject lines for each email stage (can draft once we're
   building, not a blocker for the stack discussion).
 - Whether recovering from `DISAPPEARED` should notify the willreceivers
   that a reveal was a false alarm (e.g. "owner is fine, disregard") —
   seems considerate but not yet decided.
+- Exact wording for the free-tier expiry-warning email (§12).
 
 ---
 

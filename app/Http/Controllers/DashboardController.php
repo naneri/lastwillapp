@@ -15,6 +15,7 @@ class DashboardController extends Controller
             'owner' => $user,
             'hasRecord' => filled($user->record?->body),
             'willReceiverCount' => $user->willReceivers()->count(),
+            'willReceiverLimit' => $user->plan->willReceiverLimit(),
         ]);
     }
 }
