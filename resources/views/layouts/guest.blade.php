@@ -11,6 +11,12 @@
     </head>
     <body class="bg-light">
         <div class="d-flex flex-column justify-content-center align-items-center min-vh-100 py-4">
+            <div class="mb-2">
+                <a href="/" class="text-decoration-none text-muted small">
+                    &larr; {{ __('Back to home') }}
+                </a>
+            </div>
+
             <div class="mb-4">
                 <a href="/" class="text-decoration-none text-dark fs-4 fw-semibold">
                     {{ config('app.name', 'Laravel') }}

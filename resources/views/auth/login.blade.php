@@ -17,6 +17,12 @@
                             name="password"
                             required autocomplete="current-password" />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
+
+            @if (Route::has('password.request'))
+                <a class="text-decoration-underline small text-muted" href="{{ route('password.request') }}">
+                    {{ __('Forgot your password?') }}
+                </a>
+            @endif
         </div>
 
         <div class="mb-3 form-check">
@@ -25,9 +31,9 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-end">
-            @if (Route::has('password.request'))
-                <a class="text-decoration-underline small text-muted me-3" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
+            @if (Route::has('register'))
+                <a class="text-decoration-underline small text-muted me-3" href="{{ route('register') }}">
+                    {{ __('Need an account?') }}
                 </a>
             @endif
 

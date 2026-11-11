@@ -11,10 +11,19 @@
     <body class="bg-light">
         <div class="d-flex flex-column justify-content-center align-items-center min-vh-100 text-center px-3">
             <h1 class="mb-3">{{ config('app.name', 'Laravel') }}</h1>
-            <p class="text-muted mb-4" style="max-width: 32rem;">
-                Record where your important information lives, name two people you
-                trust, and we'll make sure they can reach it if you ever stop
-                checking in.
+            <p class="text-muted mb-4" style="max-width: 36rem;">
+                A dead man's switch for the information your family would need if
+                something happened to you — where important documents live, who to
+                contact, instructions for what to do next. Write it down once, and
+                periodically confirm you're still around with a simple check-in.
+            </p>
+            <p class="text-muted mb-4" style="max-width: 36rem;">
+                If you ever stop checking in, we won't assume the worst right away
+                — you'll get reminders first. But if those go unanswered too, the
+                trusted contacts you've named will automatically receive the
+                information you left for them, one at a time, so nothing important
+                depends on someone finding the right folder or asking the right
+                question at the wrong time.
             </p>
 
             <div class="d-flex gap-3">
