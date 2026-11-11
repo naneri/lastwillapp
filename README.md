@@ -88,7 +88,12 @@ there's no secret to check signatures against). To actually go live:
 
 For local testing before a real domain exists, a tunnel (e.g.
 `cloudflared tunnel --url http://localhost:8080`) stands in for
-`<your-domain>` in steps 3–4.
+`<your-domain>` in steps 3–4. Since the tunnel terminates TLS and forwards
+plain `http://` to the app, `bootstrap/app.php` trusts it as a proxy
+(`trustProxies(at: '*')`) so Laravel reads `X-Forwarded-Proto` and still
+generates `https://` URLs — without it, every `route()`/`url()` call
+(forms, redirects, email links) comes out `http://` and gets blocked or
+flagged as mixed content on the `https://` page.
 
 This isn't integrated via `laravel/cashier-paddle` — its latest release
 still requires Guzzle `^7.4.5`, which conflicts with the Guzzle 8 that

@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkin', [OwnerCheckInController::class, 'store'])->name('owner-checkin.store');
 
     Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
+    Route::get('/billing/status', [BillingController::class, 'status'])->name('billing.status');
     Route::post('/billing/upgrade/{plan}', [BillingController::class, 'upgrade'])->name('billing.upgrade');
     Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
 });

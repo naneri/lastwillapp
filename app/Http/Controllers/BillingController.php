@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Enums\Plan;
 use App\Domain\Services\PlanLifecycle;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -58,6 +59,17 @@ class BillingController extends Controller
         $lifecycle->upgrade($owner, $targetPlan);
 
         return redirect()->route('billing.show')->with('status', 'plan-updated');
+    }
+
+    /**
+     * Polled by billing.show after a successful checkout: the overlay's
+     * own "completed" event fires client-side before Paddle's webhook has
+     * necessarily reached us, so the page can't just reload once and trust
+     * what it sees — it reloads for real once this reports the new plan.
+     */
+    public function status(Request $request): JsonResponse
+    {
+        return response()->json(['plan' => $request->user()->plan->value]);
     }
 
     /**
