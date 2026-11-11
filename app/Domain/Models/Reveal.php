@@ -25,7 +25,7 @@ class Reveal extends Model
 
     public function willreceiver(): BelongsTo
     {
-        return $this->belongsTo(Willreceiver::class);
+        return $this->belongsTo(WillReceiver::class);
     }
 
     public function isConfirmed(): bool

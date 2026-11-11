@@ -3,7 +3,7 @@
 namespace App\Domain\Mail;
 
 use App\Domain\Models\Reveal;
-use App\Domain\Models\Willreceiver;
+use App\Domain\Models\WillReceiver;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,7 +18,7 @@ class RevealMail extends Mailable implements ShouldQueue
 
     public function __construct(
         public User $owner,
-        public Willreceiver $willreceiver,
+        public WillReceiver $willreceiver,
         public Reveal $reveal,
     ) {}
 

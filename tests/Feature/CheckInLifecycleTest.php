@@ -6,7 +6,7 @@ use App\Domain\Enums\OwnerStatus;
 use App\Domain\Mail\CheckInMail;
 use App\Domain\Mail\RevealMail;
 use App\Models\User;
-use App\Domain\Models\Willreceiver;
+use App\Domain\Models\WillReceiver;
 use App\Domain\Services\CheckInLifecycle;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,8 +37,8 @@ class CheckInLifecycleTest extends TestCase
         $this->lifecycle->initialize($owner);
 
         $owner->record()->create(['body' => 'See the lockbox in the hall closet.']);
-        $owner->willreceivers()->create(['rank' => 1, 'email' => 'first@example.com']);
-        $owner->willreceivers()->create(['rank' => 2, 'email' => 'second@example.com']);
+        $owner->willReceivers()->create(['rank' => 1, 'email' => 'first@example.com']);
+        $owner->willReceivers()->create(['rank' => 2, 'email' => 'second@example.com']);
 
         $this->lifecycle->activateIfReady($owner);
 
@@ -61,11 +61,11 @@ class CheckInLifecycleTest extends TestCase
         $owner = User::factory()->create();
         $this->lifecycle->initialize($owner);
 
-        $owner->willreceivers()->create(['rank' => 1, 'email' => 'first@example.com']);
+        $owner->willReceivers()->create(['rank' => 1, 'email' => 'first@example.com']);
         $this->lifecycle->activateIfReady($owner);
         $this->assertSame(OwnerStatus::Setup, $owner->fresh()->status);
 
-        $owner->willreceivers()->create(['rank' => 2, 'email' => 'second@example.com']);
+        $owner->willReceivers()->create(['rank' => 2, 'email' => 'second@example.com']);
         $this->lifecycle->activateIfReady($owner);
         $this->assertSame(OwnerStatus::Setup, $owner->fresh()->status, 'still missing the record');
 
@@ -219,7 +219,7 @@ class CheckInLifecycleTest extends TestCase
 
         // Directly exercise the escalation path, as if the first reveal
         // had already gone out 4 days ago with no confirmation.
-        $first = Willreceiver::where('user_id', $owner->id)->where('rank', 1)->first();
+        $first = WillReceiver::where('user_id', $owner->id)->where('rank', 1)->first();
         $owner->reveals()->create([
             'willreceiver_id' => $first->id,
             'token' => 'test-token-first',
@@ -243,7 +243,7 @@ class CheckInLifecycleTest extends TestCase
         $owner->disappeared_at = $now;
         $owner->save();
 
-        $first = Willreceiver::where('user_id', $owner->id)->where('rank', 1)->first();
+        $first = WillReceiver::where('user_id', $owner->id)->where('rank', 1)->first();
         $owner->reveals()->create([
             'willreceiver_id' => $first->id,
             'token' => 'test-token-first',
@@ -268,7 +268,7 @@ class CheckInLifecycleTest extends TestCase
         $owner->disappeared_at = $now;
         $owner->save();
 
-        $first = Willreceiver::where('user_id', $owner->id)->where('rank', 1)->first();
+        $first = WillReceiver::where('user_id', $owner->id)->where('rank', 1)->first();
         $reveal = $owner->reveals()->create([
             'willreceiver_id' => $first->id,
             'token' => 'test-token-reveal',

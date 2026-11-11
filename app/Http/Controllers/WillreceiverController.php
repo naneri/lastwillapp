@@ -11,11 +11,11 @@ class WillreceiverController extends Controller
 {
     public function edit(Request $request): View
     {
-        $willreceivers = $request->user()->willreceivers()->get()->keyBy('rank');
+        $willReceivers = $request->user()->willReceivers()->get()->keyBy('rank');
 
         return view('willreceivers.edit', [
-            'first' => $willreceivers->get(1),
-            'second' => $willreceivers->get(2),
+            'first' => $willReceivers->get(1),
+            'second' => $willReceivers->get(2),
         ]);
     }
 
@@ -28,12 +28,12 @@ class WillreceiverController extends Controller
             'second_email' => ['required', 'email', 'max:255', 'different:first_email'],
         ]);
 
-        $request->user()->willreceivers()->updateOrCreate(
+        $request->user()->willReceivers()->updateOrCreate(
             ['rank' => 1],
             ['name' => $validated['first_name'], 'email' => $validated['first_email']],
         );
 
-        $request->user()->willreceivers()->updateOrCreate(
+        $request->user()->willReceivers()->updateOrCreate(
             ['rank' => 2],
             ['name' => $validated['second_name'], 'email' => $validated['second_email']],
         );

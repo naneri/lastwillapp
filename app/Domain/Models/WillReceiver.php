@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['rank', 'name', 'email'])]
-class Willreceiver extends Model
+class WillReceiver extends Model
 {
     public function user(): BelongsTo
     {

@@ -7,7 +7,7 @@ use App\Domain\Enums\OwnerStatus;
 use App\Domain\Models\CheckIn;
 use App\Domain\Models\Record;
 use App\Domain\Models\Reveal;
-use App\Domain\Models\Willreceiver;
+use App\Domain\Models\WillReceiver;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'timezone'])]
+#[Fillable(['name', 'email', 'password', 'timezone', 'rank'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -45,9 +45,9 @@ class User extends Authenticatable
         return $this->hasOne(Record::class);
     }
 
-    public function willreceivers(): HasMany
+    public function willReceivers(): HasMany
     {
-        return $this->hasMany(Willreceiver::class)->orderBy('rank');
+        return $this->hasMany(WillReceiver::class)->orderBy('rank');
     }
 
     public function checkIns(): HasMany

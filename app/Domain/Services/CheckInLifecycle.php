@@ -50,7 +50,7 @@ class CheckInLifecycle
         // (e.g. loaded as null earlier in the same request) would go stale
         // the moment the record is actually saved.
         $hasRecord = filled($owner->record()->first()?->body);
-        $hasBothWillreceivers = $owner->willreceivers()->count() === 2;
+        $hasBothWillreceivers = $owner->willReceivers()->count() === 2;
 
         if (! $hasRecord || ! $hasBothWillreceivers) {
             return;
@@ -202,7 +202,7 @@ class CheckInLifecycle
 
     protected function triggerReveal(User $owner, int $rank, CarbonImmutable $now): void
     {
-        $willreceiver = $owner->willreceivers()->where('rank', $rank)->first();
+        $willreceiver = $owner->willReceivers()->where('rank', $rank)->first();
 
         if (! $willreceiver) {
             return;
