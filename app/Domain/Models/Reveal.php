@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['willreceiver_id', 'token', 'sent_at', 'confirmed_at'])]
+#[Fillable(['will_receiver_id', 'token', 'sent_at', 'confirmed_at'])]
 class Reveal extends Model
 {
     protected function casts(): array
@@ -23,7 +23,7 @@ class Reveal extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function willreceiver(): BelongsTo
+    public function willReceiver(): BelongsTo
     {
         return $this->belongsTo(WillReceiver::class);
     }

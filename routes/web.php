@@ -6,7 +6,7 @@ use App\Http\Controllers\OwnerCheckInController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\RecordController;
 use App\Http\Controllers\RevealController;
-use App\Http\Controllers\WillreceiverController;
+use App\Http\Controllers\WillReceiverController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -25,8 +25,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/record', [RecordController::class, 'edit'])->name('record.edit');
     Route::patch('/record', [RecordController::class, 'update'])->name('record.update');
 
-    Route::get('/willreceivers', [WillreceiverController::class, 'edit'])->name('willreceivers.edit');
-    Route::put('/willreceivers', [WillreceiverController::class, 'update'])->name('willreceivers.update');
+    Route::get('/will-receivers', [WillReceiverController::class, 'edit'])->name('will-receivers.edit');
+    Route::put('/will-receivers', [WillReceiverController::class, 'update'])->name('will-receivers.update');
 
     Route::post('/checkin', [OwnerCheckInController::class, 'store'])->name('owner-checkin.store');
 });

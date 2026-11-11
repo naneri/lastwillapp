@@ -5,9 +5,9 @@ namespace Tests\Feature;
 use App\Domain\Enums\OwnerStatus;
 use App\Domain\Mail\CheckInMail;
 use App\Domain\Mail\RevealMail;
-use App\Models\User;
 use App\Domain\Models\WillReceiver;
 use App\Domain\Services\CheckInLifecycle;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -221,7 +221,7 @@ class CheckInLifecycleTest extends TestCase
         // had already gone out 4 days ago with no confirmation.
         $first = WillReceiver::where('user_id', $owner->id)->where('rank', 1)->first();
         $owner->reveals()->create([
-            'willreceiver_id' => $first->id,
+            'will_receiver_id' => $first->id,
             'token' => 'test-token-first',
             'sent_at' => $now->subDays(4),
         ]);
@@ -245,7 +245,7 @@ class CheckInLifecycleTest extends TestCase
 
         $first = WillReceiver::where('user_id', $owner->id)->where('rank', 1)->first();
         $owner->reveals()->create([
-            'willreceiver_id' => $first->id,
+            'will_receiver_id' => $first->id,
             'token' => 'test-token-first',
             'sent_at' => $now->subDays(4),
             'confirmed_at' => $now->subDays(3),
@@ -270,7 +270,7 @@ class CheckInLifecycleTest extends TestCase
 
         $first = WillReceiver::where('user_id', $owner->id)->where('rank', 1)->first();
         $reveal = $owner->reveals()->create([
-            'willreceiver_id' => $first->id,
+            'will_receiver_id' => $first->id,
             'token' => 'test-token-reveal',
             'sent_at' => $now,
         ]);

@@ -11,13 +11,13 @@ return new class extends Migration
         Schema::create('reveals', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('willreceiver_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('will_receiver_id')->constrained()->cascadeOnDelete();
             $table->string('token', 64)->unique();
             $table->timestamp('sent_at');
             $table->timestamp('confirmed_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['user_id', 'willreceiver_id']);
+            $table->unique(['user_id', 'will_receiver_id']);
         });
     }
 

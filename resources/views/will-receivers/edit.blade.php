@@ -3,7 +3,7 @@
         <h2 class="h4 mb-0">{{ __('Trusted contacts') }}</h2>
     </x-slot>
 
-    @if (session('status') === 'willreceivers-updated')
+    @if (session('status') === 'will-receivers-updated')
         <div class="alert alert-success">{{ __('Saved.') }}</div>
     @endif
 
@@ -15,7 +15,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form method="POST" action="{{ route('willreceivers.update') }}">
+            <form method="POST" action="{{ route('will-receivers.update') }}">
                 @csrf
                 @method('put')
 

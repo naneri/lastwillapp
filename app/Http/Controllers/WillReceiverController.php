@@ -7,13 +7,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class WillreceiverController extends Controller
+class WillReceiverController extends Controller
 {
     public function edit(Request $request): View
     {
         $willReceivers = $request->user()->willReceivers()->get()->keyBy('rank');
 
-        return view('willreceivers.edit', [
+        return view('will-receivers.edit', [
             'first' => $willReceivers->get(1),
             'second' => $willReceivers->get(2),
         ]);
@@ -40,6 +40,6 @@ class WillreceiverController extends Controller
 
         $lifecycle->activateIfReady($request->user());
 
-        return redirect()->route('willreceivers.edit')->with('status', 'willreceivers-updated');
+        return redirect()->route('will-receivers.edit')->with('status', 'will-receivers-updated');
     }
 }

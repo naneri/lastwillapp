@@ -68,8 +68,8 @@
                         <a href="{{ route('record.edit') }}">Write your record</a>
                     </li>
                     <li>
-                        {{ $willreceiverCount === 2 ? '✓' : '○' }}
-                        <a href="{{ route('willreceivers.edit') }}">Add both trusted contacts</a>
+                        {{ $willReceiverCount === 2 ? '✓' : '○' }}
+                        <a href="{{ route('will-receivers.edit') }}">Add both trusted contacts</a>
                     </li>
                 </ul>
             </div>
@@ -78,6 +78,6 @@
 
     <div class="d-flex gap-3">
         <a href="{{ route('record.edit') }}" class="btn btn-outline-dark">Edit your record</a>
-        <a href="{{ route('willreceivers.edit') }}" class="btn btn-outline-dark">Edit trusted contacts</a>
+        <a href="{{ route('will-receivers.edit') }}" class="btn btn-outline-dark">Edit trusted contacts</a>
     </div>
 </x-app-layout>

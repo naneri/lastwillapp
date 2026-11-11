@@ -18,7 +18,7 @@ class RevealMail extends Mailable implements ShouldQueue
 
     public function __construct(
         public User $owner,
-        public WillReceiver $willreceiver,
+        public WillReceiver $willReceiver,
         public Reveal $reveal,
     ) {}
 

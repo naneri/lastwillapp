@@ -5,7 +5,7 @@
 </head>
 <body style="font-family: sans-serif; color: #212529; max-width: 540px; margin: 0 auto; padding: 24px;">
 
-<p>Hi {{ $willreceiver->name ?: '' }},</p>
+<p>Hi {{ $willReceiver->name ?: '' }},</p>
 
 <p>
     {{ $owner->name }} ({{ $owner->email }}) set up {{ config('app.name') }}, a

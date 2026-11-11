@@ -50,9 +50,9 @@ class CheckInLifecycle
         // (e.g. loaded as null earlier in the same request) would go stale
         // the moment the record is actually saved.
         $hasRecord = filled($owner->record()->first()?->body);
-        $hasBothWillreceivers = $owner->willReceivers()->count() === 2;
+        $hasBothWillReceivers = $owner->willReceivers()->count() === 2;
 
-        if (! $hasRecord || ! $hasBothWillreceivers) {
+        if (! $hasRecord || ! $hasBothWillReceivers) {
             return;
         }
 
@@ -202,19 +202,19 @@ class CheckInLifecycle
 
     protected function triggerReveal(User $owner, int $rank, CarbonImmutable $now): void
     {
-        $willreceiver = $owner->willReceivers()->where('rank', $rank)->first();
+        $willReceiver = $owner->willReceivers()->where('rank', $rank)->first();
 
-        if (! $willreceiver) {
+        if (! $willReceiver) {
             return;
         }
 
         $reveal = $owner->reveals()->create([
-            'willreceiver_id' => $willreceiver->id,
+            'will_receiver_id' => $willReceiver->id,
             'token' => Str::random(64),
             'sent_at' => $now,
         ]);
 
-        Mail::to($willreceiver->email)->send(new RevealMail($owner, $willreceiver, $reveal));
+        Mail::to($willReceiver->email)->send(new RevealMail($owner, $willReceiver, $reveal));
     }
 
     /**
@@ -238,7 +238,7 @@ class CheckInLifecycle
 
     protected function evaluateEscalation(User $owner, CarbonImmutable $now): void
     {
-        $firstReveal = $owner->reveals()->whereHas('willreceiver', fn ($q) => $q->where('rank', 1))->first();
+        $firstReveal = $owner->reveals()->whereHas('willReceiver', fn ($q) => $q->where('rank', 1))->first();
 
         if (! $firstReveal || $firstReveal->isConfirmed()) {
             return;
@@ -248,7 +248,7 @@ class CheckInLifecycle
             return;
         }
 
-        $secondAlreadySent = $owner->reveals()->whereHas('willreceiver', fn ($q) => $q->where('rank', 2))->exists();
+        $secondAlreadySent = $owner->reveals()->whereHas('willReceiver', fn ($q) => $q->where('rank', 2))->exists();
 
         if ($secondAlreadySent) {
             return;

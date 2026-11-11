@@ -14,7 +14,7 @@ class DashboardController extends Controller
         return view('dashboard', [
             'owner' => $user,
             'hasRecord' => filled($user->record?->body),
-            'willreceiverCount' => $user->willReceivers()->count(),
+            'willReceiverCount' => $user->willReceivers()->count(),
         ]);
     }
 }

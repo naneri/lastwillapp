@@ -21,7 +21,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('willreceivers.*') ? 'active' : '' }}" href="{{ route('willreceivers.edit') }}">
+                    <a class="nav-link {{ request()->routeIs('will-receivers.*') ? 'active' : '' }}" href="{{ route('will-receivers.edit') }}">
                         {{ __('Trusted Contacts') }}
                     </a>
                 </li>
