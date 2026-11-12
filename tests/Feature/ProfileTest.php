@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -94,6 +96,61 @@ class ProfileTest extends TestCase
             ->assertSessionHasErrorsIn('userDeletion', 'password')
             ->assertRedirect('/profile');
 
+        $this->assertNotNull($user->fresh());
+    }
+
+    public function test_deleting_a_paying_owners_account_cancels_their_paddle_subscription(): void
+    {
+        Config::set('paddle.api_key', 'test-key');
+        Config::set('paddle.sandbox', true);
+
+        $user = User::factory()->create();
+        $user->forceFill(['paddle_subscription_id' => 'sub_123'])->save();
+
+        Http::fake([
+            'sandbox-api.paddle.com/subscriptions/sub_123/cancel' => Http::response(['data' => ['id' => 'sub_123']], 200),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete('/profile', [
+                'password' => 'password',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/');
+
+        $this->assertGuest();
+        $this->assertNull($user->fresh());
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://sandbox-api.paddle.com/subscriptions/sub_123/cancel'
+                && $request->method() === 'POST'
+                && $request['effective_from'] === 'immediately';
+        });
+    }
+
+    public function test_account_is_not_deleted_if_cancelling_the_paddle_subscription_fails(): void
+    {
+        Config::set('paddle.api_key', 'test-key');
+        Config::set('paddle.sandbox', true);
+
+        $user = User::factory()->create();
+        $user->forceFill(['paddle_subscription_id' => 'sub_123'])->save();
+
+        Http::fake([
+            'sandbox-api.paddle.com/*' => Http::response(['error' => ['code' => 'bad_request']], 400),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete('/profile', [
+                'password' => 'password',
+            ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $this->assertAuthenticated();
         $this->assertNotNull($user->fresh());
     }
 }

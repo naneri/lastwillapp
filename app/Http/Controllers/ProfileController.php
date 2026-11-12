@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -48,6 +50,11 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        if ($user->paddle_subscription_id && ! $this->cancelPaddleSubscription($user)) {
+            return Redirect::route('profile.edit')
+                ->with('status', 'account-deletion-failed');
+        }
+
         Auth::logout();
 
         $user->delete();
@@ -56,5 +63,31 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Cancels the owner's Paddle subscription before their account (and its
+     * paddle_subscription_id) is deleted — otherwise Paddle would keep
+     * billing them with no local record left to notice or reconcile it.
+     */
+    protected function cancelPaddleSubscription(User $user): bool
+    {
+        $apiKey = config('paddle.api_key');
+
+        if (! $apiKey) {
+            return false;
+        }
+
+        $response = Http::withToken($apiKey)
+            ->post($this->apiBase()."/subscriptions/{$user->paddle_subscription_id}/cancel", [
+                'effective_from' => 'immediately',
+            ]);
+
+        return $response->successful();
+    }
+
+    protected function apiBase(): string
+    {
+        return config('paddle.sandbox') ? 'https://sandbox-api.paddle.com' : 'https://api.paddle.com';
     }
 }

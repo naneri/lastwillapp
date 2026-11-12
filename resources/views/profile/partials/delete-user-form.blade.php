@@ -9,6 +9,12 @@
         </p>
     </header>
 
+    @if (session('status') === 'account-deletion-failed')
+        <div class="alert alert-danger">
+            {{ __("We couldn't cancel your subscription just now, so we didn't delete your account — please contact support and we'll take care of it.") }}
+        </div>
+    @endif
+
     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmUserDeletion">
         {{ __('Delete Account') }}
     </button>
