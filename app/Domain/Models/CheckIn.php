@@ -4,10 +4,15 @@ namespace App\Domain\Models;
 
 use App\Domain\Enums\CheckInStage;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property User $user
+ * @property CarbonImmutable|mixed $confirmed_at
+ */
 #[Fillable(['stage', 'token', 'sent_at', 'expires_at', 'confirmed_at'])]
 class CheckIn extends Model
 {
