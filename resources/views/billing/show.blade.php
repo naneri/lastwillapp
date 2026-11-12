@@ -109,12 +109,42 @@
                                         Upgrade
                                     </button>
                                 @endif
+                            @elseif ($plan->willReceiverLimit() < $owner->plan->willReceiverLimit() && $plan !== \App\Domain\Enums\Plan::Free)
+                                {{-- Downgrading between paid tiers isn't self-service (SPEC.md
+                                     §12 only covers the free-tier-cancellation path via the
+                                     Paddle portal below) — send them to support instead. --}}
+                                <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#downgrade-modal">
+                                    Downgrade
+                                </button>
                             @endif
                         </div>
                     </div>
                 </div>
             </div>
         @endforeach
+    </div>
+
+    <div class="modal fade" id="downgrade-modal" tabindex="-1" aria-labelledby="downgrade-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="downgrade-modal-label">Downgrading your plan</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        To downgrade to a lower plan, please contact support at
+                        <a href="mailto:{{ config('mail.from.address') }}">{{ config('mail.from.address') }}</a>.
+                    </p>
+                    <p class="mb-0 text-muted small">
+                        A downgrade can mean losing access to some of your trusted contacts, so we handle it by hand to make sure it's what you want.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Got it</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     @if ($owner->plan !== \App\Domain\Enums\Plan::Free)
