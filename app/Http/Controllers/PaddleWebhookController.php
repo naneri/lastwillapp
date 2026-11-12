@@ -67,6 +67,7 @@ class PaddleWebhookController extends Controller
 
         $owner->paddle_customer_id = $data['customer_id'] ?? $owner->paddle_customer_id;
         $owner->paddle_subscription_id = $data['id'] ?? $owner->paddle_subscription_id;
+        $owner->plan_renews_at = $this->nextBilledAt($data);
         $owner->save();
 
         $lifecycle->upgrade($owner, $plan);
@@ -75,6 +76,7 @@ class PaddleWebhookController extends Controller
     protected function handleCanceled(User $owner, PlanLifecycle $lifecycle): void
     {
         $owner->paddle_subscription_id = null;
+        $owner->plan_renews_at = null;
         $owner->save();
 
         $lifecycle->upgrade($owner, Plan::Free);
@@ -91,6 +93,12 @@ class PaddleWebhookController extends Controller
 
             if ($targetPlan) {
                 $lifecycle->scheduleDowngrade($owner, $targetPlan, CarbonImmutable::parse($scheduledChange['effective_at']));
+
+                // The subscription won't renew past the scheduled change, so
+                // there's no future "renews on" date to show — the billing
+                // page shows the scheduled change's effective date instead.
+                $owner->plan_renews_at = null;
+                $owner->save();
             }
 
             return;
@@ -103,7 +111,14 @@ class PaddleWebhookController extends Controller
 
         if ($plan) {
             $lifecycle->upgrade($owner, $plan);
+            $owner->plan_renews_at = $this->nextBilledAt($data);
+            $owner->save();
         }
+    }
+
+    protected function nextBilledAt(array $data): ?CarbonImmutable
+    {
+        return isset($data['next_billed_at']) ? CarbonImmutable::parse($data['next_billed_at']) : null;
     }
 
     protected function planFromPriceId(?string $priceId): ?Plan

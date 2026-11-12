@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Enums\Plan;
 use App\Domain\Services\PlanLifecycle;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,6 +58,10 @@ class BillingController extends Controller
         }
 
         $lifecycle->upgrade($owner, $targetPlan);
+
+        $nextBilledAt = $response->json('data.next_billed_at');
+        $owner->plan_renews_at = $nextBilledAt ? CarbonImmutable::parse($nextBilledAt) : null;
+        $owner->save();
 
         return redirect()->route('billing.show')->with('status', 'plan-updated');
     }

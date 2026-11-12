@@ -47,6 +47,32 @@
                             @endif
                         </h3>
                         <p class="text-muted mb-2">{{ $planPrice($plan) }}</p>
+
+                        @if ($owner->plan === $plan)
+                            @if ($plan === \App\Domain\Enums\Plan::Free)
+                                <p class="small">
+                                    <span class="badge bg-light text-dark border">
+                                        Ends on {{ $owner->freeTierEndsAt()->toFormattedDateString() }}
+                                    </span>
+                                </p>
+                            @elseif ($owner->pending_plan)
+                                {{-- A scheduled downgrade/cancellation (via the Paddle
+                                     customer portal) means this plan won't renew — it
+                                     just runs out at the end of the paid period. --}}
+                                <p class="small">
+                                    <span class="badge bg-light text-dark border">
+                                        Ends on {{ $owner->plan_change_effective_at->toFormattedDateString() }}
+                                    </span>
+                                </p>
+                            @elseif ($owner->plan_renews_at)
+                                <p class="mb-2">
+                                    <span class="badge bg-light text-dark border">
+                                        Renews on {{ $owner->plan_renews_at->toFormattedDateString() }}
+                                    </span>
+                                </p>
+                            @endif
+                        @endif
+
                         <ul class="small text-muted">
                             <li>{{ $plan->willReceiverLimit() }} trusted {{ Str::plural('contact', $plan->willReceiverLimit()) }}</li>
                             @if ($plan->allowsCustomMessages())

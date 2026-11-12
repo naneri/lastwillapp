@@ -23,6 +23,9 @@ use Illuminate\Notifications\Notifiable;
  * @property mixed $status
  * @property mixed $id
  * @property CarbonImmutable|mixed $disappeared_at
+ * @property mixed|null $daily_retry_day
+ * @property CarbonImmutable|mixed $next_checkin_due_at
+ * @property string $email
  */
 #[Fillable(['name', 'email', 'password', 'timezone'])]
 #[Hidden(['password', 'remember_token'])]
@@ -47,6 +50,7 @@ class User extends Authenticatable
             'plan' => Plan::class,
             'pending_plan' => Plan::class,
             'plan_change_effective_at' => 'datetime',
+            'plan_renews_at' => 'datetime',
             'free_tier_warning_sent_at' => 'datetime',
         ];
     }

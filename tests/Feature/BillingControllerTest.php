@@ -23,13 +23,17 @@ class BillingControllerTest extends TestCase
         $owner->forceFill(['paddle_subscription_id' => 'sub_123'])->save();
 
         Http::fake([
-            'sandbox-api.paddle.com/subscriptions/sub_123' => Http::response(['data' => ['id' => 'sub_123']], 200),
+            'sandbox-api.paddle.com/subscriptions/sub_123' => Http::response([
+                'data' => ['id' => 'sub_123', 'next_billed_at' => '2027-06-01T00:00:00Z'],
+            ], 200),
         ]);
 
         $response = $this->actingAs($owner)->post('/billing/upgrade/pro');
 
         $response->assertRedirect(route('billing.show'));
-        $this->assertSame(Plan::Pro, $owner->fresh()->plan);
+        $owner->refresh();
+        $this->assertSame(Plan::Pro, $owner->plan);
+        $this->assertSame('2027-06-01', $owner->plan_renews_at->toDateString());
 
         Http::assertSent(function ($request) {
             return $request->url() === 'https://sandbox-api.paddle.com/subscriptions/sub_123'
