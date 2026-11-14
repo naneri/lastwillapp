@@ -51,12 +51,16 @@ SETUP
       from registration)
 
 ACTIVE
-  → every 30 days: send check-in email with confirmation link
-  → owner clicks within window → stays ACTIVE, next check-in in 30 days
-  → owner misses it → AT_RISK
+  → every 30 days: send check-in email with confirmation link, giving
+    3 days to confirm it
+  → owner clicks within those 3 days → stays ACTIVE, next check-in in
+    30 days from the confirmation
+  → owner misses the 3-day deadline → AT_RISK (checked hourly, so this
+    fires right at the deadline — it does not wait for the next
+    30-day cycle)
 
 AT_RISK
-  → send a retry check-in email 7 days after the missed one
+  → send a retry check-in email, giving 7 days to confirm it
   → owner clicks → back to ACTIVE (next check-in in 30 days)
   → owner misses it → DAILY_RETRY
 
@@ -66,9 +70,10 @@ DAILY_RETRY
   → owner misses all 7 → DISAPPEARED
 ```
 
-So total unresponsive window before being declared disappeared: **7 days
-(AT_RISK retry) + 7 days (daily retries) ≈ 14 days** after the original
-missed monthly check-in.
+So total unresponsive window before being declared disappeared, counting
+from an owner's last confirmation: **30 days (until the next check-in is
+even sent) + 3 days (its own deadline) + 7 days (AT_RISK retry) + 7 days
+(daily retries) = 47 days**.
 
 Every check-in email contains a single-use, time-limited confirmation link.
 

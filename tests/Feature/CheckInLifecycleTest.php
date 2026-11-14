@@ -101,8 +101,8 @@ class CheckInLifecycleTest extends TestCase
         $this->assertSame(OwnerStatus::Active, $owner->fresh()->status);
         Mail::assertQueued(CheckInMail::class, 1);
 
-        // That monthly check-in's deadline passes unconfirmed: now it escalates.
-        $this->lifecycle->processDueCheckIns($now->addDays(60));
+        // That monthly check-in's 3-day deadline passes unconfirmed: now it escalates.
+        $this->lifecycle->processDueCheckIns($now->addDays(33));
 
         $this->assertSame(OwnerStatus::AtRisk, $owner->fresh()->status);
         Mail::assertQueued(CheckInMail::class, 2);
@@ -116,8 +116,8 @@ class CheckInLifecycleTest extends TestCase
         $now = CarbonImmutable::now();
 
         $this->lifecycle->processDueCheckIns($now->addDays(30)); // sends monthly
-        $this->lifecycle->processDueCheckIns($now->addDays(60)); // missed -> at_risk
-        $this->lifecycle->processDueCheckIns($now->addDays(67)); // missed -> daily_retry day 1
+        $this->lifecycle->processDueCheckIns($now->addDays(33)); // missed -> at_risk
+        $this->lifecycle->processDueCheckIns($now->addDays(40)); // missed -> daily_retry day 1
 
         $owner->refresh();
         $this->assertSame(OwnerStatus::DailyRetry, $owner->status);
@@ -125,11 +125,11 @@ class CheckInLifecycleTest extends TestCase
 
         // Miss all remaining 6 daily retries.
         for ($day = 2; $day <= 7; $day++) {
-            $this->lifecycle->processDueCheckIns($now->addDays(67 + $day - 1));
+            $this->lifecycle->processDueCheckIns($now->addDays(40 + $day - 1));
         }
 
         // One more miss pushes past day 7 -> disappeared.
-        $this->lifecycle->processDueCheckIns($now->addDays(67 + 7));
+        $this->lifecycle->processDueCheckIns($now->addDays(40 + 7));
 
         $owner->refresh();
         $this->assertSame(OwnerStatus::Disappeared, $owner->status);
@@ -147,7 +147,7 @@ class CheckInLifecycleTest extends TestCase
         $now = CarbonImmutable::now();
 
         $this->lifecycle->processDueCheckIns($now->addDays(30));
-        $this->lifecycle->processDueCheckIns($now->addDays(60)); // at_risk
+        $this->lifecycle->processDueCheckIns($now->addDays(33)); // at_risk
 
         $checkIn = $owner->fresh()->checkIns()->whereNull('confirmed_at')->latest('sent_at')->first();
 
@@ -188,12 +188,12 @@ class CheckInLifecycleTest extends TestCase
         $now = CarbonImmutable::now();
 
         $this->lifecycle->processDueCheckIns($now->addDays(30));
-        $this->lifecycle->processDueCheckIns($now->addDays(60));
-        $this->lifecycle->processDueCheckIns($now->addDays(67));
+        $this->lifecycle->processDueCheckIns($now->addDays(33));
+        $this->lifecycle->processDueCheckIns($now->addDays(40));
         for ($day = 2; $day <= 7; $day++) {
-            $this->lifecycle->processDueCheckIns($now->addDays(67 + $day - 1));
+            $this->lifecycle->processDueCheckIns($now->addDays(40 + $day - 1));
         }
-        $this->lifecycle->processDueCheckIns($now->addDays(67 + 7));
+        $this->lifecycle->processDueCheckIns($now->addDays(40 + 7));
 
         $owner->refresh();
         $this->assertSame(OwnerStatus::Disappeared, $owner->status);

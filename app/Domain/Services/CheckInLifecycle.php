@@ -104,7 +104,7 @@ class CheckInLifecycle
         if ($owner->status === OwnerStatus::Active
             && $owner->next_checkin_due_at !== null
             && $owner->next_checkin_due_at->lte($now)) {
-            $this->sendCheckIn($owner, CheckInStage::Monthly, $now, $now->addDays(30));
+            $this->sendCheckIn($owner, CheckInStage::Monthly, $now, $now->addDays(3));
         }
     }
 
