@@ -28,7 +28,7 @@ class PaddleWebhookController extends Controller
         $owner = $this->resolveOwner($data);
 
         if (! $owner) {
-            return response()->noContent();
+            return response('', 200);
         }
 
         match ($payload['event_type'] ?? null) {
@@ -38,7 +38,10 @@ class PaddleWebhookController extends Controller
             default => null,
         };
 
-        return response()->noContent();
+        // Paddle's docs call for an exact 200 (not just any 2xx) to count the
+        // delivery as successful — a 204 risks Paddle retrying deliveries we
+        // already handled fine.
+        return response('', 200);
     }
 
     protected function resolveOwner(array $data): ?User

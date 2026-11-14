@@ -58,7 +58,7 @@ class PaddleWebhookControllerTest extends TestCase
             ],
         ], 'test-secret');
 
-        $response->assertNoContent();
+        $response->assertOk();
 
         $owner->refresh();
         $this->assertSame(Plan::Basic, $owner->plan);
@@ -87,7 +87,7 @@ class PaddleWebhookControllerTest extends TestCase
             ],
         ], 'test-secret');
 
-        $response->assertNoContent();
+        $response->assertOk();
 
         $owner->refresh();
         $this->assertSame(Plan::Pro, $owner->plan);
@@ -106,7 +106,7 @@ class PaddleWebhookControllerTest extends TestCase
             'data' => ['id' => 'sub_123'],
         ], 'test-secret');
 
-        $response->assertNoContent();
+        $response->assertOk();
 
         $owner->refresh();
         $this->assertSame(Plan::Free, $owner->plan);
@@ -132,7 +132,7 @@ class PaddleWebhookControllerTest extends TestCase
             ],
         ], 'test-secret');
 
-        $response->assertNoContent();
+        $response->assertOk();
 
         $owner->refresh();
         $this->assertSame(Plan::Pro, $owner->plan, 'stays on current plan until the effective date');
