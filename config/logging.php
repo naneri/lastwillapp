@@ -131,6 +131,17 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        'paddle' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/paddle.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            // Its own env var rather than reusing LOG_DAILY_DAYS — that one
+            // also governs the general 'daily' channel, and the two
+            // shouldn't be forced to the same retention.
+            'max_files' => env('LOG_PADDLE_RETENTION_DAYS', 90),
+            'replace_placeholders' => true,
+        ],
+
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],

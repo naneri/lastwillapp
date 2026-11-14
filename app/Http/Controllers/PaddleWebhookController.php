@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Receives Paddle's subscription webhooks and keeps the owner's local plan
@@ -19,11 +20,22 @@ class PaddleWebhookController extends Controller
 {
     public function handle(Request $request, PlanLifecycle $lifecycle): Response
     {
-        if (! $this->hasValidSignature($request)) {
+        $payload = $request->json()->all();
+        $validSignature = $this->hasValidSignature($request);
+
+        // Logged regardless of signature validity so a forged/misconfigured
+        // request still shows up here rather than only in the 403 response.
+        Log::channel('paddle')->info('Received Paddle webhook', [
+            'event_id' => $payload['event_id'] ?? null,
+            'event_type' => $payload['event_type'] ?? null,
+            'valid_signature' => $validSignature,
+            'payload' => $payload,
+        ]);
+
+        if (! $validSignature) {
             abort(403, 'Invalid Paddle signature.');
         }
 
-        $payload = $request->json()->all();
         $data = $payload['data'] ?? [];
         $owner = $this->resolveOwner($data);
 
