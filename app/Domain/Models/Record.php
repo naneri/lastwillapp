@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['body'])]
 class Record extends Model
 {
+    protected $casts = [
+        'body' => 'encrypted',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

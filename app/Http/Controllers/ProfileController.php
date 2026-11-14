@@ -78,6 +78,18 @@ class ProfileController extends Controller
             return false;
         }
 
+        // Covers retrying after an earlier attempt cancelled the
+        // subscription but crashed before the account itself was deleted —
+        // Paddle rejects cancelling an already-canceled subscription, which
+        // would otherwise strand the owner unable to ever delete this
+        // account without contacting support.
+        $subscription = Http::withToken($apiKey)
+            ->get($this->apiBase()."/subscriptions/{$user->paddle_subscription_id}");
+
+        if ($subscription->successful() && $subscription->json('data.status') === 'canceled') {
+            return true;
+        }
+
         $response = Http::withToken($apiKey)
             ->post($this->apiBase()."/subscriptions/{$user->paddle_subscription_id}/cancel", [
                 'effective_from' => 'immediately',

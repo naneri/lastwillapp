@@ -108,6 +108,7 @@ class ProfileTest extends TestCase
         $user->forceFill(['paddle_subscription_id' => 'sub_123'])->save();
 
         Http::fake([
+            'sandbox-api.paddle.com/subscriptions/sub_123' => Http::response(['data' => ['id' => 'sub_123', 'status' => 'active']], 200),
             'sandbox-api.paddle.com/subscriptions/sub_123/cancel' => Http::response(['data' => ['id' => 'sub_123']], 200),
         ]);
 
@@ -128,6 +129,40 @@ class ProfileTest extends TestCase
             return $request->url() === 'https://sandbox-api.paddle.com/subscriptions/sub_123/cancel'
                 && $request->method() === 'POST'
                 && $request['effective_from'] === 'immediately';
+        });
+    }
+
+    public function test_account_deletion_succeeds_if_the_subscription_was_already_canceled(): void
+    {
+        // Covers retrying after an earlier attempt cancelled the
+        // subscription but crashed before the account itself was deleted —
+        // Paddle would reject a second cancel call, so this must be
+        // detected and skipped rather than treated as a failure.
+        Config::set('paddle.api_key', 'test-key');
+        Config::set('paddle.sandbox', true);
+
+        $user = User::factory()->create();
+        $user->forceFill(['paddle_subscription_id' => 'sub_123'])->save();
+
+        Http::fake([
+            'sandbox-api.paddle.com/subscriptions/sub_123' => Http::response(['data' => ['id' => 'sub_123', 'status' => 'canceled']], 200),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete('/profile', [
+                'password' => 'password',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/');
+
+        $this->assertGuest();
+        $this->assertNull($user->fresh());
+
+        Http::assertNotSent(function ($request) {
+            return str_contains($request->url(), '/cancel');
         });
     }
 
