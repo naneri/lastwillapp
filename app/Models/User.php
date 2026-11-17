@@ -26,6 +26,7 @@ use Illuminate\Notifications\Notifiable;
  * @property mixed|null $daily_retry_day
  * @property CarbonImmutable|mixed $next_checkin_due_at
  * @property string $email
+ * @property Plan $plan
  */
 #[Fillable(['name', 'email', 'password', 'timezone'])]
 #[Hidden(['password', 'remember_token'])]
