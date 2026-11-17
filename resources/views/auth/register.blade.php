@@ -43,10 +43,16 @@
         <x-input-error :messages="$errors->get('password_confirmation')" class="mb-3" />
 
         <div class="row">
-            <div class="col-7 d-flex align-items-center">
-                <a href="{{ route('login') }}">{{ __('Already registered?') }}</a>
+            <div class="col-8">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="terms" name="terms" value="1" @checked(old('terms'))>
+                    <label class="form-check-label" for="terms">
+                        {{ __('I agree to the') }} <a href="{{ route('terms') }}">{{ __('terms') }}</a>
+                    </label>
+                </div>
+                <x-input-error :messages="$errors->get('terms')" />
             </div>
-            <div class="col-5">
+            <div class="col-4">
                 <div class="d-grid">
                     <x-primary-button>
                         {{ __('Register') }}
@@ -55,6 +61,10 @@
             </div>
         </div>
     </form>
+
+    <p class="mb-0 mt-3">
+        <a href="{{ route('login') }}">{{ __('Already registered?') }}</a>
+    </p>
 
     <script>
         // Best-effort: detect the browser's IANA timezone so new accounts
