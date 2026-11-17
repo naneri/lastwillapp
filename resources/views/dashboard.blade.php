@@ -183,9 +183,9 @@
 
                 <form method="POST" action="{{ route('owner-checkin.store') }}" class="mt-3">
                     @csrf
-                    <x-primary-button>
+                    <button type="submit" class="btn btn-success">
                         {{ __("I'm OK — check in now") }}
-                    </x-primary-button>
+                    </button>
                 </form>
             @endif
         </div>
@@ -215,7 +215,7 @@
     @endif
 
     <div class="d-flex gap-3">
-        <a href="{{ route('record.edit') }}" class="btn btn-outline-dark">Edit your record</a>
-        <a href="{{ route('will-receivers.edit') }}" class="btn btn-outline-dark">Edit trusted contacts</a>
+        <a href="{{ route('record.edit') }}" class="btn btn-success">Edit your record</a>
+        <a href="{{ route('will-receivers.edit') }}" class="btn btn-success">Edit trusted contacts</a>
     </div>
 </x-app-layout>
