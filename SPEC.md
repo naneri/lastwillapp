@@ -1,4 +1,4 @@
-# LastWillApp — Product Spec (v0.1 draft)
+# Kana Legacy Keeper — Product Spec (v0.1 draft)
 
 ## 1. Problem
 
@@ -8,7 +8,7 @@ know about — not necessarily secret, just never shared because of inertia.
 If that person dies or disappears, this information is lost or hard to find
 exactly when it's needed most.
 
-LastWillApp is a "dead man's switch" style service: a user records this
+Kana Legacy Keeper is a "dead man's switch" style service: a user records this
 information once, the app periodically checks that they're still alive and
 reachable, and if they stop responding, it automatically delivers the
 recorded information to pre-designated trusted contacts.

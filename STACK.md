@@ -1,4 +1,4 @@
-# LastWillApp — Tech Stack (v0.1)
+# Kana Legacy Keeper — Tech Stack (v0.1)
 
 Decided after reviewing [SPEC.md](SPEC.md). Chosen to fit the owner's
 existing PHP/Laravel experience, a self-hosted VPS, and a small

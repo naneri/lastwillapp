@@ -1,4 +1,4 @@
-# LastWillApp
+# Kana Legacy Keeper
 
 A "dead man's switch" style service: you record where your important
 information lives (accounts, assets, instructions — anything you'd want
