@@ -37,10 +37,17 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        // Best-effort, from the hidden field the registration page fills in
+        // via Intl.DateTimeFormat() — never blocks registration over a bad
+        // value (e.g. JS disabled, or a tampered request), just falls back
+        // to the column's own UTC default instead.
+        $timezone = $request->string('timezone')->toString();
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'timezone' => in_array($timezone, timezone_identifiers_list(), true) ? $timezone : 'UTC',
         ]);
 
         app(CheckInLifecycle::class)->initialize($user);

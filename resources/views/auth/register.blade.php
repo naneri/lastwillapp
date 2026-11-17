@@ -1,8 +1,10 @@
 <x-guest-layout>
     <p class="login-box-msg">{{ __('Register a new account') }}</p>
 
-    <form method="POST" action="{{ route('register') }}">
+    <form method="POST" action="{{ route('register') }}" id="register-form">
         @csrf
+
+        <input type="hidden" name="timezone" id="timezone" value="{{ old('timezone') }}">
 
         <label class="visually-hidden" for="name">{{ __('Name') }}</label>
         <div class="input-group mb-3">
@@ -53,4 +55,14 @@
             </div>
         </div>
     </form>
+
+    <script>
+        // Best-effort: detect the browser's IANA timezone so new accounts
+        // don't start on the UTC default until someone finds the profile
+        // page and changes it by hand. Left blank if detection throws
+        // (e.g. a very old browser) — the server falls back to UTC.
+        try {
+            document.getElementById('timezone').value = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        } catch (e) {}
+    </script>
 </x-guest-layout>
