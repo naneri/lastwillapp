@@ -33,24 +33,45 @@
             \App\Domain\Enums\Plan::Basic => '$5 / year',
             \App\Domain\Enums\Plan::Pro => '$20 / year',
         };
+
+        $planAmount = fn (\App\Domain\Enums\Plan $plan) => match ($plan) {
+            \App\Domain\Enums\Plan::Free => 'Free',
+            \App\Domain\Enums\Plan::Basic => '$5',
+            \App\Domain\Enums\Plan::Pro => '$20',
+        };
+
+        $planSuffix = fn (\App\Domain\Enums\Plan $plan) => match ($plan) {
+            \App\Domain\Enums\Plan::Free => 'for 100 days',
+            \App\Domain\Enums\Plan::Basic, \App\Domain\Enums\Plan::Pro => '/ year',
+        };
+
+        $planTagline = fn (\App\Domain\Enums\Plan $plan) => match ($plan) {
+            \App\Domain\Enums\Plan::Free => 'Try it out before you subscribe.',
+            \App\Domain\Enums\Plan::Basic => 'For one trusted contact.',
+            \App\Domain\Enums\Plan::Pro => 'For more contacts, with custom messages.',
+        };
     @endphp
 
-    <div class="row g-3">
+    <div class="row g-4 row-cols-1 row-cols-md-3 mb-4">
         @foreach ($plans as $plan)
-            <div class="col-md-4">
-                <div class="card shadow-sm h-100 {{ $owner->plan === $plan ? 'border-success border-2' : '' }}">
-                    <div class="card-body d-flex flex-column">
-                        <h3 class="h5">
-                            {{ $plan->label() }}
-                            @if ($owner->plan === $plan)
-                                <span class="badge bg-success">Current</span>
-                            @endif
-                        </h3>
-                        <p class="text-muted mb-2">{{ $planPrice($plan) }}</p>
+            <div class="col">
+                <div class="card h-100 {{ $owner->plan === $plan ? 'border-success shadow-sm position-relative' : '' }}">
+                    @if ($owner->plan === $plan)
+                        <span class="badge text-bg-success position-absolute top-0 start-50 translate-middle">Current</span>
+                    @endif
+
+                    <div class="card-body p-4">
+                        <h5 class="fw-semibold">{{ $plan->label() }}</h5>
+                        <p class="text-secondary small mb-3">{{ $planTagline($plan) }}</p>
+
+                        <div class="mb-3">
+                            <span class="display-5 fw-bold">{{ $planAmount($plan) }}</span>
+                            <span class="text-secondary">{{ $planSuffix($plan) }}</span>
+                        </div>
 
                         @if ($owner->plan === $plan)
                             @if ($plan === \App\Domain\Enums\Plan::Free)
-                                <p class="small">
+                                <p class="small mb-3">
                                     <span class="badge bg-light text-dark border">
                                         Ends on {{ $owner->freeTierEndsAt()->toFormattedDateString() }}
                                     </span>
@@ -59,13 +80,13 @@
                                 {{-- A scheduled downgrade/cancellation (via the Paddle
                                      customer portal) means this plan won't renew — it
                                      just runs out at the end of the paid period. --}}
-                                <p class="small">
+                                <p class="small mb-3">
                                     <span class="badge bg-light text-dark border">
                                         Ends on {{ $owner->plan_change_effective_at->toFormattedDateString() }}
                                     </span>
                                 </p>
                             @elseif ($owner->plan_renews_at)
-                                <p class="mb-2">
+                                <p class="small mb-3">
                                     <span class="badge bg-light text-dark border">
                                         Renews on {{ $owner->plan_renews_at->toFormattedDateString() }}
                                     </span>
@@ -73,51 +94,53 @@
                             @endif
                         @endif
 
-                        <ul class="small text-muted">
-                            <li>{{ $plan->willReceiverLimit() }} trusted {{ Str::plural('contact', $plan->willReceiverLimit()) }}</li>
-                            @if ($plan->allowsCustomMessages())
-                                <li>Custom message per contact</li>
-                            @endif
-                        </ul>
-
-                        <div class="mt-auto">
-                            {{-- Only ever offer a button for a strictly higher tier than the
-                                 owner's current one — downgrades go through the Paddle customer
-                                 portal below (SPEC.md §12: deferred to period end, not an
-                                 in-app button). --}}
-                            @if ($plan->willReceiverLimit() > $owner->plan->willReceiverLimit())
-                                @if ($owner->paddle_subscription_id)
-                                    {{-- Already paying: change the price on the existing
-                                         subscription (prorated, immediate) instead of opening a
-                                         second, parallel checkout. --}}
-                                    <form
-                                        method="POST"
-                                        action="{{ route('billing.upgrade', $plan->value, false) }}"
-                                        class="js-confirm-upgrade"
-                                        data-confirm-message="You'll be billed now for the {{ $plan->label() }} plan ({{ $planPrice($plan) }}, prorated for the rest of your billing period). Continue?"
-                                    >
-                                        @csrf
-                                        <button type="submit" class="btn btn-dark w-100">Upgrade</button>
-                                    </form>
-                                @else
-                                    <button
-                                        type="button"
-                                        class="btn btn-dark w-100 paddle-checkout-button"
-                                        data-price-id="{{ $prices[$plan->value] ?? '' }}"
-                                        @disabled(blank($prices[$plan->value] ?? null))
-                                    >
-                                        Upgrade
-                                    </button>
-                                @endif
-                            @elseif ($plan->willReceiverLimit() < $owner->plan->willReceiverLimit() && $plan !== \App\Domain\Enums\Plan::Free)
-                                {{-- Downgrading between paid tiers isn't self-service (SPEC.md
-                                     §12 only covers the free-tier-cancellation path via the
-                                     Paddle portal below) — send them to support instead. --}}
-                                <button type="button" class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#downgrade-modal">
-                                    Downgrade
+                        {{-- Only ever offer a button for a strictly higher tier than the
+                             owner's current one — downgrades go through the Paddle customer
+                             portal below (SPEC.md §12: deferred to period end, not an
+                             in-app button). --}}
+                        @if ($plan->willReceiverLimit() > $owner->plan->willReceiverLimit())
+                            @if ($owner->paddle_subscription_id)
+                                {{-- Already paying: change the price on the existing
+                                     subscription (prorated, immediate) instead of opening a
+                                     second, parallel checkout. --}}
+                                <form
+                                    method="POST"
+                                    action="{{ route('billing.upgrade', $plan->value, false) }}"
+                                    class="js-confirm-upgrade"
+                                    data-confirm-message="You'll be billed now for the {{ $plan->label() }} plan ({{ $planPrice($plan) }}, prorated for the rest of your billing period). Continue?"
+                                >
+                                    @csrf
+                                    <button type="submit" class="btn btn-dark w-100 mb-3">Upgrade</button>
+                                </form>
+                            @else
+                                <button
+                                    type="button"
+                                    class="btn btn-dark w-100 mb-3 paddle-checkout-button"
+                                    data-price-id="{{ $prices[$plan->value] ?? '' }}"
+                                    @disabled(blank($prices[$plan->value] ?? null))
+                                >
+                                    Upgrade
                                 </button>
                             @endif
-                        </div>
+                        @elseif ($plan->willReceiverLimit() < $owner->plan->willReceiverLimit() && $plan !== \App\Domain\Enums\Plan::Free)
+                            {{-- Downgrading between paid tiers isn't self-service (SPEC.md
+                                 §12 only covers the free-tier-cancellation path via the
+                                 Paddle portal below) — send them to support instead. --}}
+                            <button type="button" class="btn btn-outline-dark w-100 mb-3" data-bs-toggle="modal" data-bs-target="#downgrade-modal">
+                                Downgrade
+                            </button>
+                        @endif
+
+                        <ul class="list-unstyled small mb-0">
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
+                                {{ $plan->willReceiverLimit() }} trusted {{ Str::plural('contact', $plan->willReceiverLimit()) }}
+                            </li>
+                            <li class="{{ $plan->allowsCustomMessages() ? '' : 'text-secondary' }}">
+                                <i class="bi {{ $plan->allowsCustomMessages() ? 'bi-check-circle-fill text-success' : 'bi-dash-circle' }} me-2" aria-hidden="true"></i>
+                                Custom message per contact
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
