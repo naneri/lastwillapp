@@ -7,25 +7,85 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/styles/overlayscrollbars.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.css" rel="stylesheet">
     </head>
-    <body class="bg-light">
-        <div class="min-vh-100">
-            @include('layouts.navigation')
+    <body class="layout-fixed sidebar-expand-lg bg-body-tertiary">
+        <div class="app-wrapper">
+            <nav class="app-header navbar navbar-expand bg-dark" data-bs-theme="dark">
+                <div class="container-fluid">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" data-lte-toggle="sidebar" href="#" role="button">
+                                <i class="bi bi-list"></i>
+                            </a>
+                        </li>
+                    </ul>
 
-            @isset($header)
-                <header class="bg-white border-bottom">
-                    <div class="container py-3">
-                        {{ $header }}
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                {{ Auth::user()->name }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('profile.edit') }}">{{ __('Profile') }}</a>
+                                </li>
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item">{{ __('Log Out') }}</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
+                <div class="sidebar-brand">
+                    <a href="{{ route('dashboard') }}" class="brand-link">
+                        <span class="brand-text fw-light">{{ config('app.name', 'Laravel') }}</span>
+                    </a>
+                </div>
+
+                <div class="sidebar-wrapper">
+                    @include('layouts.navigation')
+                </div>
+            </aside>
+
+            <main class="app-main">
+                @isset($header)
+                    <div class="app-content-header">
+                        <div class="container-fluid">
+                            {{ $header }}
+                        </div>
                     </div>
-                </header>
-            @endisset
+                @endisset
 
-            <main class="container py-4">
-                {{ $slot }}
+                <div class="app-content">
+                    <div class="container-fluid">
+                        {{ $slot }}
+                    </div>
+                </div>
             </main>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/overlayscrollbars@2.11.0/browser/overlayscrollbars.browser.es6.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/js/adminlte.js" crossorigin="anonymous"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const sidebarWrapper = document.querySelector('.sidebar-wrapper');
+
+                if (sidebarWrapper && window.OverlayScrollbars) {
+                    OverlayScrollbars(sidebarWrapper, {
+                        scrollbars: { theme: 'os-theme-light', autoHide: 'leave', clickScroll: true },
+                    });
+                }
+            });
+        </script>
     </body>
 </html>

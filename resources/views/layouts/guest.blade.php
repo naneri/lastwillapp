@@ -7,29 +7,28 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/admin-lte@4.0.0/dist/css/adminlte.css" rel="stylesheet">
     </head>
-    <body class="bg-light">
-        <div class="d-flex flex-column justify-content-center align-items-center min-vh-100 py-4">
-            <div class="mb-2">
+    <body class="login-page bg-body-secondary">
+        <div class="login-box">
+            <div class="text-center mb-2">
                 <a href="/" class="text-decoration-none text-muted small">
                     &larr; {{ __('Back to home') }}
                 </a>
             </div>
 
-            <div class="mb-4">
-                <a href="/" class="text-decoration-none text-dark fs-4 fw-semibold">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
+            <div class="login-logo">
+                <a href="/">{{ config('app.name', 'Laravel') }}</a>
             </div>
 
-            <div class="card shadow-sm" style="width: 100%; max-width: 28rem;">
-                <div class="card-body p-4">
+            <div class="card">
+                <div class="card-body login-card-body">
                     {{ $slot }}
                 </div>
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     </body>
 </html>
