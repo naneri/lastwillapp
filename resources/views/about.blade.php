@@ -26,8 +26,12 @@
             <p class="text-muted mb-4">
                 {{ config('app.name', 'Laravel') }} is a "dead man's switch"
                 style service: you record the information your family or
-                trusted contacts would need if something happened to you,
-                and periodically confirm you're still around with a simple
+                trusted contacts would need if something happened to you
+                <span class="small opacity-75">(for example, where your
+                will or insurance documents are kept, who your lawyer or
+                accountant is, where to find a personal diary, instructions
+                for pets or dependents, etc...)</span>, and
+                periodically confirm you're still around with a simple
                 check-in. If you ever stop, that information is delivered
                 automatically to the people you've named.
             </p>
