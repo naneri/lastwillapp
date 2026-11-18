@@ -82,6 +82,14 @@
             </div>
 
             <div class="mb-4">
+                <p class="fw-bold mb-1">How soon will my trusted contacts receive my information if I stop checking in?</p>
+                <p class="text-muted">
+                    Approximately between 15 and 45 days, depending on
+                    when in your check-in cycle you stop responding.
+                </p>
+            </div>
+
+            <div class="mb-4">
                 <p class="fw-bold mb-1">What does my trusted contact actually receive?</p>
                 <p class="text-muted">
                     One email with your Record and a link asking them to
