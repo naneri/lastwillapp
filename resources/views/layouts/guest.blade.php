@@ -19,7 +19,7 @@
             </div>
 
             <div class="login-logo">
-                <a href="/">{{ config('app.name', 'Laravel') }}</a>
+                <a href="/"><x-app-name /></a>
             </div>
 
             <div class="card">

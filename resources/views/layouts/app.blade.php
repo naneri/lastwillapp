@@ -47,7 +47,7 @@
             <aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
                 <div class="sidebar-brand">
                     <a href="{{ route('dashboard') }}" class="brand-link">
-                        <span class="brand-text fw-light">{{ config('app.name', 'Laravel') }}</span>
+                        <span class="brand-text fw-light"><x-app-name /></span>
                     </a>
                 </div>
 

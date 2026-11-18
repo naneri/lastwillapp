@@ -57,7 +57,7 @@
     <body>
         <nav class="navbar navbar-light bg-light static-top">
             <div class="container">
-                <a class="navbar-brand" href="/">{{ config('app.name', 'Laravel') }}</a>
+                <a class="navbar-brand" href="/"><x-app-name /></a>
                 <div class="d-flex align-items-center gap-3">
                     <a class="text-decoration-none text-dark" href="{{ route('about') }}">About</a>
                     <a class="text-decoration-none text-dark" href="{{ route('faq') }}">FAQ</a>
