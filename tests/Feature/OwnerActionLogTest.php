@@ -67,6 +67,23 @@ class OwnerActionLogTest extends TestCase
         $this->assertSame('test-agent-pause', $log->user_agent);
     }
 
+    public function test_resuming_from_paused_logs_the_resumed_action(): void
+    {
+        $owner = $this->makeActiveOwner();
+        app(CheckInLifecycle::class)->pause($owner);
+
+        $this->actingAs($owner->fresh())
+            ->withServerVariables(['REMOTE_ADDR' => '203.0.113.9', 'HTTP_USER_AGENT' => 'test-agent-resume'])
+            ->post('/checkin')
+            ->assertRedirect(route('dashboard'));
+
+        $log = OwnerActionLog::first();
+        $this->assertSame($owner->id, $log->user_id);
+        $this->assertSame(OwnerActionType::Resumed, $log->action);
+        $this->assertSame('203.0.113.9', $log->ip_address);
+        $this->assertSame('test-agent-resume', $log->user_agent);
+    }
+
     public function test_confirming_an_emailed_check_in_link_logs_the_action(): void
     {
         Mail::fake();
