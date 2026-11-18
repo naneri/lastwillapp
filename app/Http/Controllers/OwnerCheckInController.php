@@ -14,4 +14,11 @@ class OwnerCheckInController extends Controller
 
         return redirect()->route('dashboard')->with('status', 'checked-in');
     }
+
+    public function pause(Request $request, CheckInLifecycle $lifecycle): RedirectResponse
+    {
+        $lifecycle->pause($request->user());
+
+        return redirect()->route('dashboard')->with('status', 'checkins-paused');
+    }
 }

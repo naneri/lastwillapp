@@ -343,4 +343,67 @@ class CheckInLifecycleTest extends TestCase
         $response = $this->get('/reveal/'.$reveal->token);
         $response->assertOk();
     }
+
+    public function test_pause_moves_an_active_owner_to_paused_and_clears_the_due_date(): void
+    {
+        $owner = $this->makeOwnerWithReceivers();
+
+        $this->lifecycle->pause($owner);
+        $owner->refresh();
+
+        $this->assertSame(OwnerStatus::Paused, $owner->status);
+        $this->assertNull($owner->next_checkin_due_at);
+        $this->assertNull($owner->daily_retry_day);
+    }
+
+    public function test_pause_is_a_noop_from_setup(): void
+    {
+        $owner = User::factory()->create();
+        $this->lifecycle->initialize($owner);
+
+        $this->lifecycle->pause($owner);
+        $owner->refresh();
+
+        $this->assertSame(OwnerStatus::Setup, $owner->status);
+    }
+
+    public function test_pause_is_a_noop_from_disappeared(): void
+    {
+        $owner = $this->makeOwnerWithReceivers();
+        $owner->status = OwnerStatus::Disappeared;
+        $owner->disappeared_at = CarbonImmutable::now();
+        $owner->save();
+
+        $this->lifecycle->pause($owner);
+        $owner->refresh();
+
+        $this->assertSame(OwnerStatus::Disappeared, $owner->status);
+    }
+
+    public function test_paused_owner_receives_no_check_ins_or_escalations(): void
+    {
+        Mail::fake();
+
+        $owner = $this->makeOwnerWithReceivers();
+        $this->lifecycle->pause($owner);
+
+        // Far enough out that an Active owner would definitely be due a
+        // check-in by now — a Paused one should still get nothing.
+        $this->lifecycle->processDueCheckIns(CarbonImmutable::now()->addDays(60));
+
+        Mail::assertNothingQueued();
+        $this->assertSame(OwnerStatus::Paused, $owner->fresh()->status);
+    }
+
+    public function test_recover_resumes_a_paused_owner_to_active(): void
+    {
+        $owner = $this->makeOwnerWithReceivers();
+        $this->lifecycle->pause($owner);
+
+        $this->lifecycle->recover($owner);
+        $owner->refresh();
+
+        $this->assertSame(OwnerStatus::Active, $owner->status);
+        $this->assertNotNull($owner->next_checkin_due_at);
+    }
 }

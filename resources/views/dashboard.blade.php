@@ -9,6 +9,10 @@
         <div class="alert alert-success">
             {{ __("Thanks — you're confirmed. We'll check in again in 30 days.") }}
         </div>
+    @elseif (session('status') === 'checkins-paused')
+        <div class="alert alert-secondary">
+            {{ __('Check-ins are paused. Resume any time from this page.') }}
+        </div>
     @endif
 
     @if ($owner->plan === \App\Domain\Enums\Plan::Free && ! $owner->hasActiveAccess())
@@ -38,6 +42,7 @@
             \App\Domain\Enums\OwnerStatus::AtRisk => ['At risk', 'warning'],
             \App\Domain\Enums\OwnerStatus::DailyRetry => ['Urgent', 'danger'],
             \App\Domain\Enums\OwnerStatus::Disappeared => ['Disappeared', 'dark'],
+            \App\Domain\Enums\OwnerStatus::Paused => ['Paused', 'secondary'],
         };
 
         // next_checkin_due_at is dual-purposed (SPEC.md §4): while Active it's
@@ -99,6 +104,14 @@
                     </div>
                     <i class="bi bi-exclamation-octagon small-box-icon"></i>
                 </div>
+            @elseif ($owner->status === \App\Domain\Enums\OwnerStatus::Paused)
+                <div class="small-box text-bg-secondary">
+                    <div class="inner">
+                        <h3>Off</h3>
+                        <p>Check-ins</p>
+                    </div>
+                    <i class="bi bi-pause-circle small-box-icon"></i>
+                </div>
             @else
                 <div class="small-box text-bg-info">
                     <div class="inner">
@@ -145,11 +158,21 @@
     </div>
 
     <div class="card mb-3">
-        <div class="card-header">
-            <h3 class="card-title">
+        <div class="card-header d-flex align-items-center">
+            <h3 class="card-title mb-0">
                 <i class="bi bi-shield-check me-1"></i>
                 {{ __('Account status') }}
             </h3>
+
+            {{-- ms-auto, not justify-content-between on the header: AdminLTE's
+                 .card-header has a ::after clearfix pseudo-element that counts
+                 as a trailing flex item, so space-between splits the gap in
+                 two instead of pushing this flush right. --}}
+            @if (in_array($owner->status, [\App\Domain\Enums\OwnerStatus::Active, \App\Domain\Enums\OwnerStatus::AtRisk, \App\Domain\Enums\OwnerStatus::DailyRetry], true))
+                <button type="button" class="btn btn-warning btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#pause-modal">
+                    {{ __('Pause check-ins') }}
+                </button>
+            @endif
         </div>
         <div class="card-body">
             @if ($owner->status === \App\Domain\Enums\OwnerStatus::Setup)
@@ -157,6 +180,20 @@
                     Monitoring hasn't started yet. Finish the two steps below —
                     your 30-day check-in cycle begins as soon as both are done.
                 </p>
+            @elseif ($owner->status === \App\Domain\Enums\OwnerStatus::Paused)
+                <p class="text-muted">
+                    You've paused check-ins. No reminders will be sent, and
+                    your trusted contacts won't be notified even if
+                    something happens to you — monitoring stays off until
+                    you resume it.
+                </p>
+
+                <form method="POST" action="{{ route('owner-checkin.store') }}" class="mt-3">
+                    @csrf
+                    <button type="submit" class="btn btn-success">
+                        {{ __('Resume check-ins') }}
+                    </button>
+                </form>
             @else
                 @if ($owner->status === \App\Domain\Enums\OwnerStatus::Disappeared)
                     <p class="text-muted">
@@ -184,10 +221,45 @@
                 <form method="POST" action="{{ route('owner-checkin.store') }}" class="mt-3">
                     @csrf
                     <button type="submit" class="btn btn-success">
-                        {{ __("I'm OK — check in now") }}
+                        {{ __('Check in now') }}
+                        <i
+                            class="bi bi-question-circle ms-1"
+                            data-bs-toggle="tooltip"
+                            data-bs-title="Confirms you're OK and resets your next check-in to 30 days from now."
+                        ></i>
                     </button>
                 </form>
             @endif
+        </div>
+    </div>
+
+    <div class="modal fade" id="pause-modal" tabindex="-1" aria-labelledby="pause-modal-label" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="pause-modal-label">Pause check-ins?</h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        While paused, you won't get check-in reminders — and
+                        your trusted contacts won't be notified either, even
+                        if something happens to you. Monitoring stays off
+                        until you come back and resume it yourself.
+                    </p>
+                    <p class="mb-0 text-muted small">
+                        This doesn't affect your subscription or free trial —
+                        both keep running as normal while paused.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                    <form method="POST" action="{{ route('owner-checkin.pause') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-danger">Yes, pause check-ins</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -218,4 +290,15 @@
         <a href="{{ route('record.edit') }}" class="btn btn-success">Edit your record</a>
         <a href="{{ route('will-receivers.edit') }}" class="btn btn-success">Edit trusted contacts</a>
     </div>
+
+    <script>
+        // Bootstrap tooltips are opt-in — the data-bs-toggle attribute alone
+        // doesn't activate them, unlike modals/dropdowns. Deferred to
+        // DOMContentLoaded: this script renders as part of the page content,
+        // before the layout's own closing <script src="bootstrap..."> tag,
+        // so `bootstrap` isn't defined yet if called immediately.
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new bootstrap.Tooltip(el));
+        });
+    </script>
 </x-app-layout>

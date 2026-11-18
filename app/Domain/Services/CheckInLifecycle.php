@@ -7,6 +7,7 @@ use App\Domain\Enums\OwnerStatus;
 use App\Domain\Mail\CheckInMail;
 use App\Domain\Mail\RevealMail;
 use App\Domain\Models\CheckIn;
+use App\Domain\Models\Reveal;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Mail;
@@ -114,8 +115,27 @@ class CheckInLifecycle
             OwnerStatus::Active => $this->moveToAtRisk($owner, $now),
             OwnerStatus::AtRisk => $this->moveToDailyRetry($owner, $now),
             OwnerStatus::DailyRetry => $this->continueOrDeclareDisappeared($owner, $now),
-            OwnerStatus::Setup, OwnerStatus::Disappeared => null,
+            OwnerStatus::Setup, OwnerStatus::Disappeared, OwnerStatus::Paused => null,
         };
+    }
+
+    /**
+     * Owner opts out of monitoring entirely — no more check-ins, reminders,
+     * or escalation until they resume (via the same owner-checkin.store
+     * endpoint as a normal "I'm OK", see recover()). Only meaningful from a
+     * state that's actually being monitored; a no-op from Setup (nothing
+     * running yet) or Disappeared (recover() is the right action there).
+     */
+    public function pause(User $owner): void
+    {
+        if (! in_array($owner->status, [OwnerStatus::Active, OwnerStatus::AtRisk, OwnerStatus::DailyRetry], true)) {
+            return;
+        }
+
+        $owner->status = OwnerStatus::Paused;
+        $owner->daily_retry_day = null;
+        $owner->next_checkin_due_at = null;
+        $owner->save();
     }
 
     protected function moveToAtRisk(User $owner, CarbonImmutable $now): void
@@ -184,12 +204,14 @@ class CheckInLifecycle
     }
 
     /**
-     * Owner checks in directly from the app (works from any non-disappeared
-     * state, and also lets a disappeared owner self-recover — see
-     * SPEC.md §6 and §10.5).
+     * Owner checks in directly from the app — works from any state,
+     * including letting a disappeared owner self-recover (SPEC.md §6 and
+     * §10.5) and a paused owner resume monitoring (same "I'm OK" action,
+     * just a different starting state).
      */
     public function recover(User $owner): void
     {
+        /** @var CheckIn $openCheckIn */
         $openCheckIn = $owner->checkIns()->whereNull('confirmed_at')->latest('sent_at')->first();
 
         if ($openCheckIn) {
@@ -255,6 +277,7 @@ class CheckInLifecycle
     {
         $limit = $owner->plan->willReceiverLimit();
 
+        /** @var Reveal $latestReveal */
         $latestReveal = $owner->reveals()
             ->whereHas('willReceiver', fn ($q) => $q->where('rank', '<=', $limit))
             ->get()

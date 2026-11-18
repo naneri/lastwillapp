@@ -77,6 +77,26 @@ even sent) + 3 days (its own deadline) + 7 days (AT_RISK retry) + 7 days
 
 Every check-in email contains a single-use, time-limited confirmation link.
 
+### PAUSED — opting out of monitoring
+
+An owner in ACTIVE, AT_RISK, or DAILY_RETRY can pause check-ins entirely:
+
+```
+PAUSED
+  → no check-in emails, no reminders, no escalation of any kind while in
+    this state
+  → owner resumes (same "I'm OK" action as a normal check-in) → ACTIVE,
+    with a fresh 30-day window — regardless of which state they paused
+    from
+```
+
+Pausing is a no-op from SETUP (nothing running yet) and DISAPPEARED
+(self-recovery via the existing "I'm OK" flow is the right action there
+instead). Pausing does **not** affect the Free tier's 100-day trial
+window or a paid subscription's billing — both keep running exactly as
+if the owner weren't paused. Pausing only ever stops the monitoring
+clock, never the trial/billing clock.
+
 ## 5. Reveal / escalation lifecycle (after DISAPPEARED)
 
 ```

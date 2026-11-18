@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/will-receivers', [WillReceiverController::class, 'update'])->name('will-receivers.update');
 
     Route::post('/checkin', [OwnerCheckInController::class, 'store'])->name('owner-checkin.store');
+    Route::post('/checkin/pause', [OwnerCheckInController::class, 'pause'])->name('owner-checkin.pause');
 
     Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
     Route::get('/billing/status', [BillingController::class, 'status'])->name('billing.status');

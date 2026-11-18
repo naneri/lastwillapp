@@ -9,4 +9,5 @@ enum OwnerStatus: string
     case AtRisk = 'at_risk';
     case DailyRetry = 'daily_retry';
     case Disappeared = 'disappeared';
+    case Paused = 'paused';
 }
