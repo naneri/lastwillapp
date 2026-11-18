@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $rank
+ */
 #[Fillable(['rank', 'name', 'email', 'message'])]
 class WillReceiver extends Model
 {

@@ -3,10 +3,15 @@
 namespace App\Domain\Models;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property Carbon $sent_at
+ * @property WillReceiver $willReceiver
+ */
 #[Fillable(['will_receiver_id', 'token', 'sent_at', 'confirmed_at'])]
 class Reveal extends Model
 {
