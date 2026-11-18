@@ -19,6 +19,14 @@ Route::get('/terms', function () {
     return view('terms');
 })->name('terms');
 
+Route::get('/about', function () {
+    return view('about');
+})->name('about');
+
+Route::get('/faq', function () {
+    return view('faq');
+})->name('faq');
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
