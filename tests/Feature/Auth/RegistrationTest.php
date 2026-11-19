@@ -42,4 +42,18 @@ class RegistrationTest extends TestCase
         $response->assertSessionHasErrors('terms');
         $this->assertGuest();
     }
+
+    public function test_registration_rejects_disposable_email_addresses(): void
+    {
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@mailinator.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'terms' => '1',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
 }
