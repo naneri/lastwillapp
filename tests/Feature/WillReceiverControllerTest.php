@@ -18,14 +18,14 @@ class WillReceiverControllerTest extends TestCase
 
         $response = $this->actingAs($owner)->put('/will-receivers', [
             'receivers' => [
-                1 => ['email' => 'first@example.com'],
-                2 => ['email' => 'second@example.com'],
+                1 => ['email' => 'first@gmail.com'],
+                2 => ['email' => 'second@gmail.com'],
             ],
         ]);
 
         $response->assertRedirect(route('will-receivers.edit'));
         $this->assertSame(1, $owner->willReceivers()->count());
-        $this->assertSame('first@example.com', $owner->willReceivers()->first()->email);
+        $this->assertSame('first@gmail.com', $owner->willReceivers()->first()->email);
     }
 
     public function test_basic_owner_can_save_two_willreceivers(): void
@@ -34,8 +34,8 @@ class WillReceiverControllerTest extends TestCase
 
         $this->actingAs($owner)->put('/will-receivers', [
             'receivers' => [
-                1 => ['email' => 'first@example.com'],
-                2 => ['email' => 'second@example.com'],
+                1 => ['email' => 'first@gmail.com'],
+                2 => ['email' => 'second@gmail.com'],
             ],
         ])->assertRedirect(route('will-receivers.edit'));
 
@@ -48,9 +48,9 @@ class WillReceiverControllerTest extends TestCase
 
         $this->actingAs($owner)->put('/will-receivers', [
             'receivers' => [
-                1 => ['email' => 'first@example.com', 'message' => 'For you, Alice.'],
-                2 => ['email' => 'second@example.com', 'message' => 'For you, Bob.'],
-                3 => ['email' => 'third@example.com'],
+                1 => ['email' => 'first@gmail.com', 'message' => 'For you, Alice.'],
+                2 => ['email' => 'second@gmail.com', 'message' => 'For you, Bob.'],
+                3 => ['email' => 'third@gmail.com'],
             ],
         ])->assertRedirect(route('will-receivers.edit'));
 
@@ -66,7 +66,7 @@ class WillReceiverControllerTest extends TestCase
 
         $this->actingAs($owner)->put('/will-receivers', [
             'receivers' => [
-                1 => ['email' => 'first@example.com', 'message' => 'Sneaky message'],
+                1 => ['email' => 'first@gmail.com', 'message' => 'Sneaky message'],
             ],
         ])->assertRedirect(route('will-receivers.edit'));
 
@@ -79,8 +79,8 @@ class WillReceiverControllerTest extends TestCase
 
         $response = $this->actingAs($owner)->from('/will-receivers')->put('/will-receivers', [
             'receivers' => [
-                1 => ['email' => 'same@example.com'],
-                2 => ['email' => 'same@example.com'],
+                1 => ['email' => 'same@gmail.com'],
+                2 => ['email' => 'same@gmail.com'],
             ],
         ]);
 

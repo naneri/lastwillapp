@@ -35,7 +35,7 @@ class WillReceiverController extends Controller
         $rules = [];
         for ($rank = 1; $rank <= $limit; $rank++) {
             $rules["receivers.$rank.name"] = ['nullable', 'string', 'max:255'];
-            $rules["receivers.$rank.email"] = [$rank === 1 ? 'required' : 'nullable', 'email', 'max:255'];
+            $rules["receivers.$rank.email"] = [$rank === 1 ? 'required' : 'nullable', 'email:rfc,dns', 'max:255'];
             $rules["receivers.$rank.message"] = ['nullable', 'string', 'max:5000'];
         }
 
