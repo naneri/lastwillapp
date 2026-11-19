@@ -99,6 +99,16 @@
             </div>
 
             <div class="mb-4">
+                <p class="fw-bold mb-1">Do I have to use my real name on my account?</p>
+                <p class="text-muted">
+                    No, but it's recommended. The email your trusted contact
+                    receives shows the name and email address on your
+                    account — if neither looks familiar, they may mistake it
+                    for spam and ignore it.
+                </p>
+            </div>
+
+            <div class="mb-4">
                 <p class="fw-bold mb-1">What if my first contact doesn't check their email?</p>
                 <p class="text-muted">
                     If they don't confirm in time, it moves to your
