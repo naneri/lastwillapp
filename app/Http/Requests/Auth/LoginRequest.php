@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -46,11 +47,24 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => $this->signedUpViaSocialOnly()
+                    ? 'This account signed up with Google. Use the "Continue with Google" button instead of a password.'
+                    : trans('auth.failed'),
             ]);
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Whether the email belongs to an account that was created via social
+     * login and never set a password — a plain "those credentials don't
+     * match" message would be misleading here, since no password exists to
+     * check against.
+     */
+    protected function signedUpViaSocialOnly(): bool
+    {
+        return User::where('email', $this->string('email'))->whereNull('password')->exists();
     }
 
     /**

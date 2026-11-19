@@ -41,6 +41,14 @@
         </div>
     </form>
 
+    <p class="text-center text-muted small mb-3 mt-4">{{ __('— OR —') }}</p>
+
+    <div class="d-grid mb-3">
+        <a href="{{ route('social.redirect', 'google') }}" class="btn btn-danger">
+            <i class="bi bi-google me-1"></i> {{ __('Continue with Google') }}
+        </a>
+    </div>
+
     @if (Route::has('password.request'))
         <p class="mb-1">
             <a href="{{ route('password.request') }}">{{ __('Forgot your password?') }}</a>

@@ -62,7 +62,15 @@
         </div>
     </form>
 
-    <p class="mb-0 mt-3">
+    <p class="text-center text-muted small mb-3 mt-4">{{ __('— OR —') }}</p>
+
+    <div class="d-grid mb-3">
+        <a href="{{ route('social.redirect', 'google') }}" class="btn btn-danger">
+            <i class="bi bi-google me-1"></i> {{ __('Continue with Google') }}
+        </a>
+    </div>
+
+    <p class="mb-0">
         <a href="{{ route('login') }}">{{ __('Already registered?') }}</a>
     </p>
 
