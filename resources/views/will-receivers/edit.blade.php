@@ -46,7 +46,16 @@
                         </div>
                         <div class="col-sm-7">
                             <x-input-label for="receivers_{{ $rank }}_email" value="{{ __('Email') }}" />
-                            <x-text-input id="receivers_{{ $rank }}_email" name="receivers[{{ $rank }}][email]" type="email" :required="$rank === 1" :value="old('receivers.'.$rank.'.email', $receiver?->email)" />
+                            <div class="input-group">
+                                <span
+                                    class="input-group-text"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-title="{{ __("Double-check this address for typos — if it's wrong, your trusted contact won't receive your record.") }}"
+                                >
+                                    <i class="bi bi-info-circle"></i>
+                                </span>
+                                <x-text-input id="receivers_{{ $rank }}_email" name="receivers[{{ $rank }}][email]" type="email" :required="$rank === 1" :value="old('receivers.'.$rank.'.email', $receiver?->email)" />
+                            </div>
                             <x-input-error :messages="$errors->get('receivers.'.$rank.'.email')" class="mt-2" />
                         </div>
                     </div>
@@ -65,4 +74,10 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new bootstrap.Tooltip(el));
+        });
+    </script>
 </x-app-layout>
