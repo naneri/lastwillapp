@@ -20,7 +20,14 @@ WORKDIR /var/www/html
 # this in dev, shadowing everything copied/installed below, so dev always
 # runs whatever's on the host instead (including its own separately
 # installed vendor/, with dev dependencies).
+
+# Copied and installed separately from the rest of the app so this layer
+# only re-runs when composer.json/composer.lock actually change, instead of
+# on every single code change.
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --no-interaction \
+RUN composer dump-autoload --optimize \
     && chown -R www-data:www-data storage bootstrap/cache
