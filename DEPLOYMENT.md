@@ -103,10 +103,10 @@ Repo → Settings → Secrets and variables → Actions:
 
 Needs your domain already on Cloudflare's nameservers (free).
 
-1. Cloudflare dashboard → Zero Trust → Networks → Tunnels → **Create a tunnel**.
+1. Cloudflare dashboard → Zero Trust → **Networking → Tunnels** → **Create a tunnel**.
 2. Choose **Cloudflared** as the connector, name it (e.g. `kanakeeper`).
 3. On the "Install connector" step, pick **Docker** — it shows a `docker run` command containing a long token after `--token`. Copy just that token value into `.env` as `CLOUDFLARE_TUNNEL_TOKEN` (the `cloudflared` service in `docker-compose.prod.yml` already runs `tunnel run` with that token; you don't need to run the command it shows you).
-4. Still in the tunnel setup, add a **Public Hostname**: hostname = your domain, service = `HTTP`, URL = `nginx:80` (the nginx container's name on the Docker network, reachable by service name — not `localhost`).
+4. Select the tunnel you just created → **Routes** tab → **Add route** → **Published application**. Domain = your domain, Service URL = `http://nginx:80` (the nginx container's name on the Docker network, reachable by service name — not `localhost`).
 
 ## 8. First deploy
 
