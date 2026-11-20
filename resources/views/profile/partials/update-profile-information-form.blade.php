@@ -48,10 +48,30 @@
         </div>
 
         <div class="mb-3">
+            @php
+                // Sorted by current UTC offset (earliest to latest), the
+                // way timezone pickers are usually laid out — the plain
+                // alphabetical order PHP returns groups "Africa/..." before
+                // "Pacific/...", not west-to-east.
+                $now = new DateTime();
+                $timezones = array_map(function (string $tz) use ($now) {
+                    $offset = (new DateTimeZone($tz))->getOffset($now);
+                    $sign = $offset < 0 ? '-' : '+';
+                    $abs = abs($offset);
+
+                    return [
+                        'id' => $tz,
+                        'offset' => $offset,
+                        'label' => sprintf('(UTC%s%02d:%02d) %s', $sign, intdiv($abs, 3600), intdiv($abs % 3600, 60), $tz),
+                    ];
+                }, timezone_identifiers_list());
+
+                usort($timezones, fn ($a, $b) => $a['offset'] <=> $b['offset'] ?: $a['id'] <=> $b['id']);
+            @endphp
             <x-input-label for="timezone" :value="__('Timezone')" />
             <select id="timezone" name="timezone" class="form-select">
-                @foreach (timezone_identifiers_list() as $tz)
-                    <option value="{{ $tz }}" @selected(old('timezone', $user->timezone) === $tz)>{{ $tz }}</option>
+                @foreach ($timezones as $tz)
+                    <option value="{{ $tz['id'] }}" @selected(old('timezone', $user->timezone) === $tz['id'])>{{ $tz['label'] }}</option>
                 @endforeach
             </select>
             <div class="form-text">Used to display check-in due dates in your local time.</div>
