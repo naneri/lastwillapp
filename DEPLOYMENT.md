@@ -22,23 +22,30 @@ That installs the `docker compose` plugin too (verify with `docker compose versi
 
 ## 3. Create a deploy user
 
-Running everything as root works but isn't great practice. On the droplet:
+Running everything as root works but isn't great practice. While
+connected as root:
 
 ```bash
 adduser deploy
 usermod -aG docker deploy
 ```
 
-Generate a dedicated SSH key pair **on your own machine** (not the
-server) for GitHub Actions to use:
+`/home/deploy/.ssh/authorized_keys` needs two separate keys, for two
+separate directions of access:
 
-```bash
-ssh-keygen -t ed25519 -f deploy_key -N ""
-```
+- **Your own key**, so you can `ssh deploy@<droplet-ip>` directly for
+  manual work (steps 4, 5, 8 below, running `prod-artisan`, checking
+  logs, ...). The key you added when creating the droplet in step 1
+  works fine here too — add that same public key.
+- **A dedicated key for GitHub Actions**, generated **on your own
+  machine** (not the server):
 
-Add `deploy_key.pub`'s contents to `/home/deploy/.ssh/authorized_keys`
-on the droplet. Keep `deploy_key` (the private half) — it goes into a
-GitHub secret in step 6.
+  ```bash
+  ssh-keygen -t ed25519 -f deploy_key -N ""
+  ```
+
+  Add `deploy_key.pub`'s contents too. Keep `deploy_key` (the private
+  half) — it goes into a GitHub secret in step 6.
 
 ## 4. Clone the repo
 
@@ -54,8 +61,23 @@ over HTTPS with a personal access token instead.)
 
 ## 5. Create the production `.env`
 
-Copy `.env.example` to `.env` on the server and fill in real values —
-this file is never committed, so it only ever exists on the droplet:
+Copy `.env.example` to `.env` on the server — this file is never
+committed, so it only ever exists on the droplet:
+
+```bash
+cp .env.example .env
+```
+
+Do this *before* trying to generate `APP_KEY` below — `docker compose`
+needs `.env` to physically exist (`env_file: .env` fails outright on a
+missing file), and `docker compose run` needs the `app` image to
+exist, so build it first:
+
+```bash
+docker compose -f docker-compose.prod.yml build app
+```
+
+Now fill in real values in `.env`:
 
 - `APP_ENV=production`, `APP_DEBUG=false`
 - `APP_URL` — the real domain, e.g. `https://kanakeeper.com`
