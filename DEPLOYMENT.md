@@ -1,7 +1,7 @@
 # Deploying to production
 
-One-time setup on a fresh DigitalOcean droplet, then every push to
-`master` deploys automatically via GitHub Actions.
+One-time setup on a fresh DigitalOcean droplet, then deploys are
+triggered by hand from GitHub Actions whenever you're ready to ship.
 
 ## 1. Create the droplet
 
@@ -99,11 +99,14 @@ unattended.
 
 ## 9. Ongoing deploys
 
-From here on, every push to `master` triggers
+From here on, deploying means going to the repo's **Actions** tab →
+**Deploy** → **Run workflow**. That triggers
 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), which
-SSHes in and runs `deploy.sh`: pulls the latest commit, rebuilds images,
-recreates containers, runs migrations, re-caches config/routes/views,
-and restarts the queue workers.
+SSHes in and runs `deploy.sh`: pulls the latest commit on `master`,
+rebuilds images, recreates containers, runs migrations, re-caches
+config/routes/views, and restarts the queue workers. Pushing to
+`master` by itself doesn't deploy anything — merge whenever, deploy
+whenever you're ready.
 
 ## Running an artisan command by hand
 
