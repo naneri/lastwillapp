@@ -10,6 +10,7 @@
         "laravel/framework": "^13.17",
         "laravel/socialite": "^5.33",
         "laravel/tinker": "^3.0",
+        "league/commonmark": "^2.10",
         "propaganistas/laravel-disposable-email": "^2.5"
     },
     "require-dev": {

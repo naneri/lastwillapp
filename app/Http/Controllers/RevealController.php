@@ -3,20 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Models\Reveal;
+use App\Domain\Services\MarkdownRenderer;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class RevealController extends Controller
 {
-    public function show(string $token): View
+    public function show(string $token, MarkdownRenderer $markdown): View
     {
         $reveal = Reveal::where('token', $token)->firstOrFail();
+        $record = $reveal->user->record;
 
         return view('reveal.show', [
             'reveal' => $reveal,
             'owner' => $reveal->user,
-            'record' => $reveal->user->record,
+            'record' => $record,
+            'recordHtml' => $record ? $markdown->toHtml($record->body) : null,
         ]);
     }
 

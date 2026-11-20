@@ -21,7 +21,7 @@
             <div class="card shadow-sm mb-3">
                 <div class="card-body">
                     @if ($record && filled($record->body))
-                        <p style="white-space: pre-wrap;">{{ $record->body }}</p>
+                        <div class="record-content">{!! $recordHtml !!}</div>
                     @else
                         <p class="text-muted mb-0">No record was written.</p>
                     @endif
