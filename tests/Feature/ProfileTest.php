@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\SocialAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -21,6 +22,26 @@ class ProfileTest extends TestCase
             ->get('/profile');
 
         $response->assertOk();
+    }
+
+    public function test_profile_page_shows_google_as_not_connected_by_default(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertSee('Not connected');
+    }
+
+    public function test_profile_page_shows_google_as_connected_once_linked(): void
+    {
+        $user = User::factory()->create();
+        SocialAccount::create(['user_id' => $user->id, 'provider' => 'google', 'provider_id' => 'google-123']);
+
+        $response = $this->actingAs($user)->get('/profile');
+
+        $response->assertDontSee('Not connected');
+        $response->assertSee('Connected');
     }
 
     public function test_profile_information_can_be_updated(): void

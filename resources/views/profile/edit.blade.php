@@ -20,6 +20,12 @@
 
         <div class="card shadow-sm">
             <div class="card-body">
+                @include('profile.partials.connected-accounts')
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
                 @include('profile.partials.delete-user-form')
             </div>
         </div>
