@@ -136,6 +136,10 @@
                                 <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
                                 {{ $plan->willReceiverLimit() }} trusted {{ Str::plural('contact', $plan->willReceiverLimit()) }}
                             </li>
+                            <li class="mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
+                                {{ number_format($plan->recordCharacterLimit()) }}-character record
+                            </li>
                             <li class="{{ $plan->allowsCustomMessages() ? '' : 'text-secondary' }}">
                                 <i class="bi {{ $plan->allowsCustomMessages() ? 'bi-check-circle-fill text-success' : 'bi-dash-circle' }} me-2" aria-hidden="true"></i>
                                 Custom message per contact

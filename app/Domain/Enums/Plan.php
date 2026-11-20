@@ -25,6 +25,18 @@ enum Plan: string
         return $this === self::Pro;
     }
 
+    /**
+     * How much visible Record text (MaxVisibleTextLength) this plan
+     * allows.
+     */
+    public function recordCharacterLimit(): int
+    {
+        return match ($this) {
+            self::Free => 1_000,
+            self::Basic, self::Pro => 30_000,
+        };
+    }
+
     public function label(): string
     {
         return match ($this) {
