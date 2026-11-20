@@ -1,0 +1,78 @@
+services:
+    app:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+        env_file: .env
+        restart: unless-stopped
+        depends_on:
+            mysql:
+                condition: service_healthy
+
+    nginx:
+        build:
+            context: .
+            dockerfile: docker/nginx/Dockerfile
+        restart: unless-stopped
+        depends_on:
+            - app
+        # No "ports:" mapping on purpose — nothing but cloudflared talks to
+        # this over the internal Docker network, so the droplet never has
+        # to open 80/443 to the internet.
+
+    scheduler:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+        env_file: .env
+        command: php artisan schedule:work
+        restart: unless-stopped
+        depends_on:
+            mysql:
+                condition: service_healthy
+
+    queue:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+        env_file: .env
+        command: php artisan queue:work --tries=3 --max-time=3600
+        restart: unless-stopped
+        depends_on:
+            mysql:
+                condition: service_healthy
+
+    mysql:
+        image: mysql:8.4
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+        restart: unless-stopped
+        volumes:
+            - mysql-data:/var/lib/mysql
+        # "depends_on: mysql" elsewhere only waits for this container to
+        # start, not for MySQL to actually accept connections — without a
+        # real healthcheck, app/queue/scheduler can briefly crash-loop
+        # against a MySQL that's still initializing (e.g. right after a
+        # host reboot).
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+        # No "ports:" mapping — the database is reachable only from other
+        # containers on this compose network, never from the internet.
+
+    cloudflared:
+        image: cloudflare/cloudflared:latest
+        command: tunnel run
+        environment:
+            TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+        restart: unless-stopped
+        depends_on:
+            - nginx
+
+volumes:
+    mysql-data:

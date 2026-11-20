@@ -52,12 +52,17 @@ links, mail).
   rewrite (matches §10.2 — 2FA planned, not required, for v1).
 
 ## Hosting
-- Self-hosted VPS (e.g. Hetzner/DigitalOcean).
-- Leaning toward **Laravel Forge** on top of the VPS (~$12-19/mo) to
-  handle deploys, SSL, the scheduler cron entry, and queue workers
-  reliably — the parts of this app (cron, queues) that can't afford to
-  silently fail. A raw unmanaged Docker Compose setup (nginx + php-fpm +
-  MySQL) remains an option if full control is preferred over convenience.
+- **A bare DigitalOcean VPS running docker-compose.prod.yml** — the same
+  Docker Compose shape as local dev (app/nginx/mysql/queue/scheduler),
+  just built as standalone images instead of bind-mounted, plus a
+  `cloudflared` container. No Forge; deploys are a GitHub Actions
+  workflow that SSHes in and runs `deploy.sh`. See
+  [DEPLOYMENT.md](DEPLOYMENT.md) for the full setup and deploy process.
+- **Cloudflare Tunnel** for HTTPS/ingress instead of nginx+Let's
+  Encrypt — the droplet opens no ports to the internet beyond SSH;
+  `cloudflared` makes an outbound-only connection and Cloudflare
+  terminates TLS at the edge. Same approach already used for local dev
+  tunneling, free for this use case.
 
 ## Local development
 - **Docker Compose** for local dev, mirroring production services:

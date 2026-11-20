@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Convenience wrapper for running artisan commands against the production
+# containers on the server — ./prod-artisan tinker, ./prod-artisan migrate,
+# etc. Not used locally; dev runs `docker compose exec app php artisan ...`
+# directly against docker-compose.yml instead.
+cd "$(dirname "$0")"
+exec docker compose -f docker-compose.prod.yml exec app php artisan "$@"
