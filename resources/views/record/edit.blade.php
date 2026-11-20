@@ -27,7 +27,10 @@
                 @method('patch')
 
                 <div class="mb-3">
-                    <x-input-label for="body" value="{{ __('Record') }}" />
+                    <div class="d-flex justify-content-between align-items-end mb-2">
+                        <x-input-label for="body" value="{{ __('Record') }}" class="mb-0" />
+                        <span id="record-counter" class="text-muted small"></span>
+                    </div>
                     <div id="record-editor" style="display: none;"></div>
                     <textarea id="body" name="body" rows="12" class="form-control">{{ old('body', $record?->body) }}</textarea>
                     <x-input-error :messages="$errors->get('body')" class="mt-2" />
@@ -45,6 +48,36 @@
         document.addEventListener('DOMContentLoaded', function () {
             var textarea = document.getElementById('body');
             var editorEl = document.getElementById('record-editor');
+            var counterEl = document.getElementById('record-counter');
+            var maxVisibleLength = {{ (int) $maxVisibleLength }};
+
+            // Approximates what the server's MaxVisibleTextLength rule
+            // measures (Markdown rendered to HTML, tags stripped) by
+            // stripping the syntax this editor's restricted toolbar can
+            // actually produce — reading contenteditable's own innerText
+            // instead picks up invisible characters Vditor uses
+            // internally for cursor placement, which overcounts.
+            function visibleLength(markdown) {
+                var text = markdown
+                    .replace(/^#{1,6}\s+/gm, '')
+                    .replace(/\*\*([^*]+)\*\*/g, '$1')
+                    .replace(/\*([^*]+)\*/g, '$1')
+                    .replace(/_([^_]+)_/g, '$1')
+                    .replace(/^\s*[-*+]\s+/gm, '')
+                    .replace(/^\s*\d+\.\s+/gm, '')
+                    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+                    .trim();
+
+                return text.length;
+            }
+
+            function updateCounter() {
+                var length = visibleLength(vditor.getValue());
+
+                counterEl.textContent = length.toLocaleString() + ' / ' + maxVisibleLength.toLocaleString();
+                counterEl.classList.toggle('text-danger', length > maxVisibleLength);
+                counterEl.classList.toggle('text-muted', length <= maxVisibleLength);
+            }
 
             // Progressive enhancement: if the CDN script fails to load (no
             // network, ad blocker, etc.), the plain textarea above stays
@@ -62,6 +95,7 @@
                 placeholder: 'Where things are and who to ask...',
                 cache: { enable: false },
                 toolbar: ['headings', 'bold', 'italic', '|', 'list', 'ordered-list', 'link'],
+                input: updateCounter,
                 after: function () {
                     // Belt-and-suspenders: the constructor's `value` option
                     // isn't documented as mode-specific, so set it again
@@ -69,6 +103,7 @@
                     vditor.setValue(textarea.value);
                     textarea.style.display = 'none';
                     editorEl.style.display = '';
+                    updateCounter();
                 },
             });
 
