@@ -31,7 +31,7 @@ class RecordController extends Controller
             // The raw max is just a generous sanity ceiling so a
             // pathological amount of markup can't bypass the visible-text
             // limit entirely.
-            'body' => ['nullable', 'string', 'max:200000', new MaxVisibleTextLength(self::MAX_VISIBLE_LENGTH)],
+            'body' => ['nullable', 'string', 'max:'. (self::MAX_VISIBLE_LENGTH * 10), new MaxVisibleTextLength(self::MAX_VISIBLE_LENGTH)],
         ]);
 
         $request->user()->record()->updateOrCreate([], $validated);
