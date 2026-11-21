@@ -15,9 +15,36 @@
         </div>
     @endif
 
-    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmUserDeletion">
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#contactSupportForDeletion">
         {{ __('Delete Account') }}
     </button>
+
+    <div class="modal fade" id="contactSupportForDeletion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5">
+                        {{ __('Delete Account') }}
+                    </h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="text-muted small mb-0">
+                        {{ __("Account deletion isn't self-service yet — please email") }}
+                        <a href="mailto:support@kanakeeper.com">support@kanakeeper.com</a>
+                        {{ __("and we'll take care of it for you.") }}
+                    </p>
+                </div>
+
+                <div class="modal-footer">
+                    <x-secondary-button data-bs-dismiss="modal">
+                        {{ __('Close') }}
+                    </x-secondary-button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="modal fade" id="confirmUserDeletion" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
