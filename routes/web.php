@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CheckInConfirmationController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OwnerCheckInController;
 use App\Http\Controllers\PaddleWebhookController;
@@ -49,6 +50,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/billing/status', [BillingController::class, 'status'])->name('billing.status');
     Route::post('/billing/upgrade/{plan}', [BillingController::class, 'upgrade'])->name('billing.upgrade');
     Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');
+
+    Route::get('/contact', [ContactController::class, 'create'])->name('contact.create');
+    Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
 });
 
 Route::get('/checkin/{token}', [CheckInConfirmationController::class, 'show'])->name('checkin.confirm');

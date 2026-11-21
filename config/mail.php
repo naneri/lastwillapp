@@ -115,4 +115,6 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    'support_address' => env('SUPPORT_EMAIL', 'support@'.parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+
 ];

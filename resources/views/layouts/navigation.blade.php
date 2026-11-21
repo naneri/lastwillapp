@@ -24,5 +24,11 @@
                 <p>{{ __('Plan & Billing') }}</p>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('contact.create') }}" class="nav-link {{ request()->routeIs('contact.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-envelope"></i>
+                <p>{{ __('Help & Support') }}</p>
+            </a>
+        </li>
     </ul>
 </nav>
