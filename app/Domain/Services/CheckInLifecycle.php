@@ -10,6 +10,7 @@ use App\Domain\Models\CheckIn;
 use App\Domain\Models\Reveal;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -138,54 +139,72 @@ class CheckInLifecycle
         $owner->save();
     }
 
+    // Each of these pairs an owner/check-in state change with queuing the
+    // notification email — DB::transaction() keeps that pairing atomic
+    // (queued mail is just a row in the `jobs` table on this same
+    // connection, see QUEUE_CONNECTION=database) so a process killed
+    // mid-step can never leave the owner's state advanced without the
+    // email that was supposed to go with it ever being queued, which
+    // would otherwise strand them with no further automated recovery.
+
     protected function moveToAtRisk(User $owner, CarbonImmutable $now): void
     {
-        $owner->status = OwnerStatus::AtRisk;
-        $owner->save();
+        DB::transaction(function () use ($owner, $now) {
+            $owner->status = OwnerStatus::AtRisk;
+            $owner->save();
 
-        $this->sendCheckIn($owner, CheckInStage::AtRisk, $now, $now->addDays(7));
+            $this->sendCheckIn($owner, CheckInStage::AtRisk, $now, $now->addDays(7));
+        });
     }
 
     protected function moveToDailyRetry(User $owner, CarbonImmutable $now): void
     {
-        $owner->status = OwnerStatus::DailyRetry;
-        $owner->daily_retry_day = 1;
-        $owner->save();
+        DB::transaction(function () use ($owner, $now) {
+            $owner->status = OwnerStatus::DailyRetry;
+            $owner->daily_retry_day = 1;
+            $owner->save();
 
-        $this->sendCheckIn($owner, CheckInStage::DailyRetry, $now, $now->addDay());
+            $this->sendCheckIn($owner, CheckInStage::DailyRetry, $now, $now->addDay());
+        });
     }
 
     protected function continueOrDeclareDisappeared(User $owner, CarbonImmutable $now): void
     {
         if ($owner->daily_retry_day < 7) {
-            $owner->daily_retry_day++;
-            $owner->save();
+            DB::transaction(function () use ($owner, $now) {
+                $owner->daily_retry_day++;
+                $owner->save();
 
-            $this->sendCheckIn($owner, CheckInStage::DailyRetry, $now, $now->addDay());
+                $this->sendCheckIn($owner, CheckInStage::DailyRetry, $now, $now->addDay());
+            });
 
             return;
         }
 
-        $owner->status = OwnerStatus::Disappeared;
-        $owner->disappeared_at = $now;
-        $owner->save();
+        DB::transaction(function () use ($owner, $now) {
+            $owner->status = OwnerStatus::Disappeared;
+            $owner->disappeared_at = $now;
+            $owner->save();
 
-        $this->triggerReveal($owner, rank: 1, now: $now);
+            $this->triggerReveal($owner, rank: 1, now: $now);
+        });
     }
 
     protected function sendCheckIn(User $owner, CheckInStage $stage, CarbonImmutable $now, CarbonImmutable $expiresAt): void
     {
-        $checkIn = $owner->checkIns()->create([
-            'stage' => $stage,
-            'token' => Str::random(64),
-            'sent_at' => $now,
-            'expires_at' => $expiresAt,
-        ]);
+        DB::transaction(function () use ($owner, $stage, $now, $expiresAt) {
+            $checkIn = $owner->checkIns()->create([
+                'stage' => $stage,
+                'token' => Str::random(64),
+                'sent_at' => $now,
+                'expires_at' => $expiresAt,
+            ]);
 
-        $owner->next_checkin_due_at = $expiresAt;
-        $owner->save();
+            $owner->next_checkin_due_at = $expiresAt;
+            $owner->save();
 
-        Mail::to($owner->email)->send(new CheckInMail($owner, $checkIn));
+            Mail::to($owner->email)->send(new CheckInMail($owner, $checkIn));
+        });
     }
 
     /**
@@ -197,10 +216,12 @@ class CheckInLifecycle
             return;
         }
 
-        $checkIn->confirmed_at = CarbonImmutable::now();
-        $checkIn->save();
+        DB::transaction(function () use ($checkIn) {
+            $checkIn->confirmed_at = CarbonImmutable::now();
+            $checkIn->save();
 
-        $this->resetToActive($checkIn->user);
+            $this->resetToActive($checkIn->user);
+        });
     }
 
     /**
@@ -211,15 +232,17 @@ class CheckInLifecycle
      */
     public function recover(User $owner): void
     {
-        /** @var CheckIn $openCheckIn */
-        $openCheckIn = $owner->checkIns()->whereNull('confirmed_at')->latest('sent_at')->first();
+        DB::transaction(function () use ($owner) {
+            /** @var CheckIn $openCheckIn */
+            $openCheckIn = $owner->checkIns()->whereNull('confirmed_at')->latest('sent_at')->first();
 
-        if ($openCheckIn) {
-            $openCheckIn->confirmed_at = CarbonImmutable::now();
-            $openCheckIn->save();
-        }
+            if ($openCheckIn) {
+                $openCheckIn->confirmed_at = CarbonImmutable::now();
+                $openCheckIn->save();
+            }
 
-        $this->resetToActive($owner);
+            $this->resetToActive($owner);
+        });
     }
 
     protected function resetToActive(User $owner): void
@@ -240,13 +263,15 @@ class CheckInLifecycle
             return;
         }
 
-        $reveal = $owner->reveals()->create([
-            'will_receiver_id' => $willReceiver->id,
-            'token' => Str::random(64),
-            'sent_at' => $now,
-        ]);
+        DB::transaction(function () use ($owner, $willReceiver, $now) {
+            $reveal = $owner->reveals()->create([
+                'will_receiver_id' => $willReceiver->id,
+                'token' => Str::random(64),
+                'sent_at' => $now,
+            ]);
 
-        Mail::to($willReceiver->email)->send(new RevealMail($owner, $willReceiver, $reveal));
+            Mail::to($willReceiver->email)->send(new RevealMail($owner, $willReceiver, $reveal));
+        });
     }
 
     /**

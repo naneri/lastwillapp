@@ -27,6 +27,11 @@ services:
         env_file: .env
         command: php artisan schedule:work
         restart: unless-stopped
+        # Docker's default 10s grace period can cut off a scheduled task
+        # that's still running when a deploy recreates this container;
+        # schedule:work has no graceful-shutdown logic of its own to
+        # protect against that, unlike queue:work below.
+        stop_grace_period: 90s
         depends_on:
             mysql:
                 condition: service_healthy
@@ -38,6 +43,10 @@ services:
         env_file: .env
         command: php artisan queue:work --tries=3 --max-time=3600
         restart: unless-stopped
+        # Gives queue:work's own graceful-shutdown handling (finish the
+        # current job on SIGTERM) enough time to actually complete before
+        # Docker's grace period expires and SIGKILLs it mid-job.
+        stop_grace_period: 90s
         depends_on:
             mysql:
                 condition: service_healthy

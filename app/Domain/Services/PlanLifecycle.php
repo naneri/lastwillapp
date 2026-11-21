@@ -6,6 +6,7 @@ use App\Domain\Enums\Plan;
 use App\Domain\Mail\FreeTierExpiryWarningMail;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 /**
@@ -81,10 +82,16 @@ class PlanLifecycle
             ->chunkById(100, function ($owners) use ($now) {
                 foreach ($owners as $owner) {
                     if ($owner->freeTierWarningDueAt()->lte($now)) {
-                        $owner->free_tier_warning_sent_at = $now;
-                        $owner->save();
+                        // Transactional so a process killed mid-step can't
+                        // mark the warning "sent" (permanently excluding
+                        // this owner from the query above) without the
+                        // email actually having been queued.
+                        DB::transaction(function () use ($owner, $now) {
+                            $owner->free_tier_warning_sent_at = $now;
+                            $owner->save();
 
-                        Mail::to($owner->email)->send(new FreeTierExpiryWarningMail($owner));
+                            Mail::to($owner->email)->send(new FreeTierExpiryWarningMail($owner));
+                        });
                     }
                 }
             });
