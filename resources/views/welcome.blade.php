@@ -169,6 +169,8 @@
                             <li class="list-inline-item"><a href="{{ route('faq') }}">FAQ</a></li>
                             <li class="list-inline-item">⋅</li>
                             <li class="list-inline-item"><a href="{{ route('terms') }}">Terms of Service</a></li>
+                            <li class="list-inline-item">⋅</li>
+                            <li class="list-inline-item"><a href="{{ route('privacy') }}">Privacy Policy</a></li>
                         </ul>
                         <p class="text-muted small mb-0">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. All rights reserved.</p>
                     </div>

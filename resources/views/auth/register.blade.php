@@ -47,7 +47,7 @@
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="terms" name="terms" value="1" @checked(old('terms'))>
                     <label class="form-check-label" for="terms">
-                        {{ __('I agree to the') }} <a href="{{ route('terms') }}">{{ __('terms') }}</a>
+                        {{ __('I agree to the') }} <a href="{{ route('terms') }}">{{ __('Terms of Service') }}</a> {{ __('and') }} <a href="{{ route('privacy') }}">{{ __('Privacy Policy') }}</a>
                     </label>
                 </div>
                 <x-input-error :messages="$errors->get('terms')" />
