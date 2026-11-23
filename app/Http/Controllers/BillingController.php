@@ -33,6 +33,12 @@ class BillingController extends Controller
      * would create a second, parallel subscription instead of replacing
      * the first. First-time subscribers (no existing subscription) go
      * through the Paddle.js checkout overlay instead — see billing.show.
+     *
+     * Pro's button on billing.show is temporarily replaced with a
+     * disabled "Coming soon" placeholder (see that view), so this route
+     * can't normally be reached for it right now. Left functionally
+     * untouched on purpose — it still works for a manual/support-assisted
+     * upgrade, and needs no changes to re-enable Pro later.
      */
     public function upgrade(Request $request, string $plan, PlanLifecycle $lifecycle): RedirectResponse
     {

@@ -99,7 +99,16 @@
                              portal below (SPEC.md §12: deferred to period end, not an
                              in-app button). --}}
                         @if ($plan->willReceiverLimit() > $owner->plan->willReceiverLimit())
-                            @if ($owner->paddle_subscription_id)
+                            @if ($plan === \App\Domain\Enums\Plan::Pro)
+                                {{-- Pro is temporarily not purchasable from the UI — swap
+                                     this back for the two branches below (the same ones
+                                     Basic uses) to re-enable it. See the comment on
+                                     BillingController@upgrade for why that route itself
+                                     is left working as-is in the meantime. --}}
+                                <button type="button" class="btn btn-dark w-100 mb-3 opacity-50" disabled>
+                                    Coming soon
+                                </button>
+                            @elseif ($owner->paddle_subscription_id)
                                 {{-- Already paying: change the price on the existing
                                      subscription (prorated, immediate) instead of opening a
                                      second, parallel checkout. --}}
