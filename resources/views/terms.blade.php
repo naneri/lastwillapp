@@ -25,9 +25,11 @@
             <p class="text-muted">
                 These Terms of Service ("Terms") govern your use of
                 {{ config('app.name', 'Laravel') }} (the "Service"), operated
-                by us ("we", "us", "our"). By creating an account or using the
-                Service, you agree to these Terms. If you don't agree, please
-                don't use the Service.
+                by Kanat Tabaldiev, acting as an Individual Entrepreneur
+                under the laws of the Kyrgyz Republic ("we", "us", "our").
+                By creating an account or using the Service, you agree to
+                these Terms. If you don't agree, please don't use the
+                Service.
             </p>
 
             <h2 class="h5 mt-4 mb-2">1. What the Service Is</h2>
