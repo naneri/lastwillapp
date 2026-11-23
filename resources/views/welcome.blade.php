@@ -65,6 +65,7 @@
                 <a class="navbar-brand" href="/"><x-app-name /></a>
                 <div class="d-flex align-items-center gap-3">
                     <a class="text-decoration-none text-dark" href="{{ route('about') }}">About</a>
+                    <a class="text-decoration-none text-dark" href="{{ route('pricing') }}">Pricing</a>
                     <a class="text-decoration-none text-dark" href="{{ route('faq') }}">FAQ</a>
                     @auth
                         <a class="btn btn-dark" href="{{ url('/dashboard') }}">Dashboard</a>
@@ -165,6 +166,8 @@
                     <div class="col-lg-6 text-center text-lg-start">
                         <ul class="list-inline mb-2">
                             <li class="list-inline-item"><a href="{{ route('about') }}">About</a></li>
+                            <li class="list-inline-item">⋅</li>
+                            <li class="list-inline-item"><a href="{{ route('pricing') }}">Pricing</a></li>
                             <li class="list-inline-item">⋅</li>
                             <li class="list-inline-item"><a href="{{ route('faq') }}">FAQ</a></li>
                             <li class="list-inline-item">⋅</li>

@@ -47,8 +47,8 @@
 
         $planTagline = fn (\App\Domain\Enums\Plan $plan) => match ($plan) {
             \App\Domain\Enums\Plan::Free => 'Try it out before you subscribe.',
-            \App\Domain\Enums\Plan::Basic => 'For one trusted contact.',
-            \App\Domain\Enums\Plan::Pro => 'For more contacts, with custom messages.',
+            \App\Domain\Enums\Plan::Basic => 'For two trusted contacts.',
+            \App\Domain\Enums\Plan::Pro => 'More contacts, custom messages.',
         };
     @endphp
 

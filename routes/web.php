@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Enums\Plan;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CheckInConfirmationController;
 use App\Http\Controllers\ContactController;
@@ -31,6 +32,10 @@ Route::get('/about', function () {
 Route::get('/faq', function () {
     return view('faq');
 })->name('faq');
+
+Route::get('/pricing', function () {
+    return view('pricing', ['plans' => Plan::cases()]);
+})->name('pricing');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
