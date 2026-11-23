@@ -25,6 +25,10 @@ Route::get('/privacy', function () {
     return view('privacy');
 })->name('privacy');
 
+Route::get('/refunds', function () {
+    return view('refunds');
+})->name('refunds');
+
 Route::get('/about', function () {
     return view('about');
 })->name('about');

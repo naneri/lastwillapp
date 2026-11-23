@@ -110,7 +110,9 @@
                 terms apply to the transaction itself. Subscriptions renew
                 automatically until cancelled; you can cancel any time
                 through the billing portal in your dashboard, and cancellation
-                takes effect at the end of the current billing period.
+                takes effect at the end of the current billing period. See
+                our <a href="{{ route('refunds') }}">Refund Policy</a> for
+                details on refunds.
             </p>
 
             <h2 class="h5 mt-4 mb-2">7. Acceptable Use</h2>
