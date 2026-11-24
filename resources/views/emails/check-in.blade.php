@@ -18,7 +18,7 @@
 
     <p>
         We didn't hear back from your last check-in. Please confirm you're OK
-        within the next 7 days — if we don't hear from you, we'll start
+        within the next 4 days — if we don't hear from you, we'll start
         checking in daily.
     </p>
 @else

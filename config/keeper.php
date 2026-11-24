@@ -13,7 +13,7 @@ return [
 
         // How long the At Risk retry check-in stays open before an owner
         // who hasn't confirmed moves to Daily Retry.
-        'at_risk_days' => 7,
+        'at_risk_days' => 4,
 
         // How many consecutive daily check-in emails are sent in Daily
         // Retry — one per day — before the owner is declared Disappeared.

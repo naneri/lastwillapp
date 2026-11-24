@@ -26,8 +26,8 @@ class CheckInMail extends Mailable implements ShouldQueue
         return new Envelope(
             subject: match ($this->checkIn->stage) {
                 CheckInStage::Monthly => 'Please confirm you\'re OK — '.config('app.name'),
-                CheckInStage::AtRisk => 'We missed your check-in — please confirm within 7 days',
-                CheckInStage::DailyRetry => 'URGENT: Confirm today or your information will be shared',
+                CheckInStage::AtRisk => 'We missed your check-in — please confirm within 4 days',
+                CheckInStage::DailyRetry => 'This needs your attention today — confirm you\'re OK',
             },
         );
     }

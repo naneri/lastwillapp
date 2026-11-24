@@ -60,7 +60,7 @@ ACTIVE
     30-day cycle)
 
 AT_RISK
-  → send a retry check-in email, giving 7 days to confirm it
+  → send a retry check-in email, giving 4 days to confirm it
   → owner clicks → back to ACTIVE (next check-in in 30 days)
   → owner misses it → DAILY_RETRY
 
@@ -72,8 +72,11 @@ DAILY_RETRY
 
 So total unresponsive window before being declared disappeared, counting
 from an owner's last confirmation: **30 days (until the next check-in is
-even sent) + 3 days (its own deadline) + 7 days (AT_RISK retry) + 7 days
-(daily retries) = 47 days**.
+even sent) + 3 days (its own deadline) + 4 days (AT_RISK retry) + 7 days
+(daily retries) = 44 days**.
+
+These thresholds (and the escalation confirmation window in §5) live in
+`config/keeper.php`, not hardcoded in the state machine.
 
 Every check-in email contains a single-use, time-limited confirmation link.
 
