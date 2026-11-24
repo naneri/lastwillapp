@@ -80,7 +80,7 @@
             <div class="container">
                 <div class="row justify-content-center">
                     <div class="col-xl-7">
-                        <h1 class="mb-4">A dead man's switch for the people who'd need to know</h1>
+                        <h1 class="mb-4">If something happened to you tomorrow, is there something you'd want your loved ones to know?</h1>
                         <p class="lead mb-4">
                             Write down where important documents live, who to contact, and
                             what to do next — once. Periodically confirm you're still around
@@ -97,6 +97,9 @@
                                 @endif
                             @endauth
                         </div>
+                        <p class="mt-3 mb-0">
+                            <a href="{{ route('about') }}" class="text-white-50 small text-decoration-none">Why I built this &rarr;</a>
+                        </p>
                     </div>
                 </div>
             </div>
