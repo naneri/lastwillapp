@@ -21,12 +21,43 @@
 
             <h1 class="h3 mb-4">About {{ config('app.name', 'Laravel') }}</h1>
 
-            <div class="alert alert-warning">
-                This is a placeholder. The full story behind
-                {{ config('app.name', 'Laravel') }} — why it exists and
-                who's behind it — will go here. The "How it works" section
-                below is accurate, not a placeholder.
-            </div>
+            <h2 class="h5 mb-3">Why I built this</h2>
+
+            <p class="text-muted mb-3">
+                There's a story that's stuck with me: a man passed away, and
+                not long after, an acquaintance of his brought the family a
+                diary — pages of memories from his time during the Second
+                World War, and his own thoughts on the personal and global
+                events that shaped his life. He'd kept it from his children
+                while he was alive; it held a lot of sad moments he didn't
+                want them carrying while he was still around to see.
+                Instead, he trusted someone to make sure it reached them
+                once he no longer could.
+            </p>
+            <p class="text-muted mb-3">
+                What stays with me isn't the diary itself so much as the
+                arrangement behind it: wanting the people you love to have
+                something, but only once you're no longer there to hand it
+                over yourself. Most of us never set anything like that up,
+                and when we do think about it, it usually comes down to
+                trusting one specific person to remember, and to actually
+                follow through, whenever that day comes.
+            </p>
+            <p class="text-muted mb-4">
+                So I built {{ config('app.name', 'Laravel') }} to do that
+                automatically — a simple place to write down what matters,
+                once, and a system that makes sure it reaches the people you
+                trust if you ever go silent, without depending on any one
+                person remembering to pass it along. Not a diary, and not a
+                legal will — just a safety net for the things only you know.
+            </p>
+
+            <h2 class="h5 mb-3">Who's behind it</h2>
+
+            <p class="text-muted mb-4">
+                I'm Kanat Tabaldiev, building and running this myself as a
+                Software Developer based in the Kyrgyz Republic.
+            </p>
 
             <p class="text-muted mb-4">
                 {{ config('app.name', 'Laravel') }} is a "dead man's switch"
@@ -55,13 +86,14 @@
                     your plan.
                 </li>
                 <li class="mb-3">
-                    <strong>Confirm you're OK, periodically.</strong> A
-                    simple check-in email, roughly every month.
+                    <strong>Periodically confirm you're OK with a single
+                    click.</strong> A simple check-in email arrives roughly
+                    every month.
                 </li>
                 <li class="mb-3">
                     <strong>Miss one, and reminders escalate.</strong>
                     You'll get increasingly urgent follow-ups over the
-                    following weeks — plenty of chances to confirm before
+                    following 2 weeks — plenty of chances to confirm before
                     anything happens.
                 </li>
                 <li class="mb-3">
