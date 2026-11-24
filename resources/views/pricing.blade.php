@@ -49,8 +49,13 @@
                 };
             @endphp
 
-            <div class="row g-4 row-cols-1 row-cols-md-3 mb-4">
-                @foreach ($plans as $plan)
+            <div class="row g-4 row-cols-1 row-cols-md-2 justify-content-center mb-4" style="max-width: 40rem; margin-inline: auto;">
+                {{-- Pro is temporarily hidden from this public page (not just its
+                     upgrade button, since there's no existing Pro owner viewing
+                     this one) — see the same "Coming soon" note on
+                     billing/show.blade.php's Pro card for why the plan itself
+                     is left fully intact otherwise. --}}
+                @foreach (collect($plans)->reject(fn ($plan) => $plan === \App\Domain\Enums\Plan::Pro) as $plan)
                     <div class="col">
                         <div class="card h-100">
                             <div class="card-body p-4">
@@ -62,30 +67,18 @@
                                     <span class="text-secondary">{{ $planSuffix($plan) }}</span>
                                 </div>
 
-                                @if ($plan === \App\Domain\Enums\Plan::Pro)
-                                    {{-- Temporarily not purchasable — see the same note on
-                                         billing/show.blade.php's Pro card. --}}
-                                    <button type="button" class="btn btn-dark w-100 mb-3 opacity-50" disabled>
-                                        Coming soon
-                                    </button>
-                                @else
-                                    <a href="{{ route('register') }}" class="btn btn-dark w-100 mb-3">
-                                        Get started
-                                    </a>
-                                @endif
+                                <a href="{{ route('register') }}" class="btn btn-dark w-100 mb-3">
+                                    Get started
+                                </a>
 
                                 <ul class="list-unstyled small mb-0">
                                     <li class="mb-2">
                                         <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
                                         {{ $plan->willReceiverLimit() }} trusted {{ Str::plural('contact', $plan->willReceiverLimit()) }}
                                     </li>
-                                    <li class="mb-2">
+                                    <li>
                                         <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
                                         {{ number_format($plan->recordCharacterLimit()) }}-character record
-                                    </li>
-                                    <li class="{{ $plan->allowsCustomMessages() ? '' : 'text-secondary' }}">
-                                        <i class="bi {{ $plan->allowsCustomMessages() ? 'bi-check-circle-fill text-success' : 'bi-dash-circle' }} me-2" aria-hidden="true"></i>
-                                        Custom message per contact
                                     </li>
                                 </ul>
                             </div>

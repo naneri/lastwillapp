@@ -17,9 +17,18 @@ class BillingController extends Controller
     {
         $owner = $request->user();
 
+        // Pro is temporarily hidden from the plan picker (see the upgrade()
+        // doc comment below) — unless the owner is already on it, since
+        // they still need to see their own current-plan card and the
+        // "Manage or cancel subscription" button beneath it.
+        $plans = array_filter(
+            Plan::cases(),
+            fn (Plan $plan) => $plan !== Plan::Pro || $owner->plan === Plan::Pro
+        );
+
         return view('billing.show', [
             'owner' => $owner,
-            'plans' => Plan::cases(),
+            'plans' => $plans,
             'clientToken' => config('paddle.client_token'),
             'sandbox' => config('paddle.sandbox'),
             'prices' => config('paddle.prices'),
@@ -34,11 +43,11 @@ class BillingController extends Controller
      * the first. First-time subscribers (no existing subscription) go
      * through the Paddle.js checkout overlay instead — see billing.show.
      *
-     * Pro's button on billing.show is temporarily replaced with a
-     * disabled "Coming soon" placeholder (see that view), so this route
-     * can't normally be reached for it right now. Left functionally
-     * untouched on purpose — it still works for a manual/support-assisted
-     * upgrade, and needs no changes to re-enable Pro later.
+     * Pro is temporarily filtered out of the plan picker in show() for
+     * owners who aren't already on it, so this route can't normally be
+     * reached for it right now. Left functionally untouched on purpose —
+     * it still works for a manual/support-assisted upgrade, and needs no
+     * changes to re-enable Pro later.
      */
     public function upgrade(Request $request, string $plan, PlanLifecycle $lifecycle): RedirectResponse
     {

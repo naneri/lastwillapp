@@ -52,7 +52,7 @@
         };
     @endphp
 
-    <div class="row g-4 row-cols-1 row-cols-md-3 mb-4">
+    <div class="row g-4 row-cols-1 row-cols-md-3 justify-content-center mb-4">
         @foreach ($plans as $plan)
             <div class="col">
                 <div class="card h-100 {{ $owner->plan === $plan ? 'border-success shadow-sm position-relative' : '' }}">
@@ -99,16 +99,7 @@
                              portal below (SPEC.md §12: deferred to period end, not an
                              in-app button). --}}
                         @if ($plan->willReceiverLimit() > $owner->plan->willReceiverLimit())
-                            @if ($plan === \App\Domain\Enums\Plan::Pro)
-                                {{-- Pro is temporarily not purchasable from the UI — swap
-                                     this back for the two branches below (the same ones
-                                     Basic uses) to re-enable it. See the comment on
-                                     BillingController@upgrade for why that route itself
-                                     is left working as-is in the meantime. --}}
-                                <button type="button" class="btn btn-dark w-100 mb-3 opacity-50" disabled>
-                                    Coming soon
-                                </button>
-                            @elseif ($owner->paddle_subscription_id)
+                            @if ($owner->paddle_subscription_id)
                                 {{-- Already paying: change the price on the existing
                                      subscription (prorated, immediate) instead of opening a
                                      second, parallel checkout. --}}
@@ -149,10 +140,16 @@
                                 <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
                                 {{ number_format($plan->recordCharacterLimit()) }}-character record
                             </li>
-                            <li class="{{ $plan->allowsCustomMessages() ? '' : 'text-secondary' }}">
-                                <i class="bi {{ $plan->allowsCustomMessages() ? 'bi-check-circle-fill text-success' : 'bi-dash-circle' }} me-2" aria-hidden="true"></i>
-                                Custom message per contact
-                            </li>
+                            @if ($plan->allowsCustomMessages())
+                                {{-- Only Pro has this, and Pro is otherwise hidden from
+                                     the plan picker (see show() above) — showing it as
+                                     "not included" on the other cards would hint at a
+                                     feature owners have no way to learn more about. --}}
+                                <li>
+                                    <i class="bi bi-check-circle-fill text-success me-2" aria-hidden="true"></i>
+                                    Custom message per contact
+                                </li>
+                            @endif
                         </ul>
                     </div>
                 </div>
