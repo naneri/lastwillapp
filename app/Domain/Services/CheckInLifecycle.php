@@ -61,7 +61,7 @@ class CheckInLifecycle
         }
 
         $owner->status = OwnerStatus::Active;
-        $owner->next_checkin_due_at = CarbonImmutable::now()->addDays(30);
+        $owner->next_checkin_due_at = CarbonImmutable::now()->addDays(config('keeper.checkin.interval_days'));
         $owner->save();
     }
 
@@ -106,7 +106,7 @@ class CheckInLifecycle
         if ($owner->status === OwnerStatus::Active
             && $owner->next_checkin_due_at !== null
             && $owner->next_checkin_due_at->lte($now)) {
-            $this->sendCheckIn($owner, CheckInStage::Monthly, $now, $now->addDays(3));
+            $this->sendCheckIn($owner, CheckInStage::Monthly, $now, $now->addDays(config('keeper.checkin.confirm_days')));
         }
     }
 
@@ -153,7 +153,7 @@ class CheckInLifecycle
             $owner->status = OwnerStatus::AtRisk;
             $owner->save();
 
-            $this->sendCheckIn($owner, CheckInStage::AtRisk, $now, $now->addDays(7));
+            $this->sendCheckIn($owner, CheckInStage::AtRisk, $now, $now->addDays(config('keeper.checkin.at_risk_days')));
         });
     }
 
@@ -164,18 +164,18 @@ class CheckInLifecycle
             $owner->daily_retry_day = 1;
             $owner->save();
 
-            $this->sendCheckIn($owner, CheckInStage::DailyRetry, $now, $now->addDay());
+            $this->sendCheckIn($owner, CheckInStage::DailyRetry, $now, $now->addDays(config('keeper.checkin.daily_retry_cadence_days')));
         });
     }
 
     protected function continueOrDeclareDisappeared(User $owner, CarbonImmutable $now): void
     {
-        if ($owner->daily_retry_day < 7) {
+        if ($owner->daily_retry_day < config('keeper.checkin.daily_retry_days')) {
             DB::transaction(function () use ($owner, $now) {
                 $owner->daily_retry_day++;
                 $owner->save();
 
-                $this->sendCheckIn($owner, CheckInStage::DailyRetry, $now, $now->addDay());
+                $this->sendCheckIn($owner, CheckInStage::DailyRetry, $now, $now->addDays(config('keeper.checkin.daily_retry_cadence_days')));
             });
 
             return;
@@ -249,7 +249,7 @@ class CheckInLifecycle
     {
         $owner->status = OwnerStatus::Active;
         $owner->daily_retry_day = null;
-        $owner->next_checkin_due_at = CarbonImmutable::now()->addDays(30);
+        $owner->next_checkin_due_at = CarbonImmutable::now()->addDays(config('keeper.checkin.interval_days'));
         $owner->save();
     }
 
@@ -276,12 +276,12 @@ class CheckInLifecycle
 
     /**
      * Called periodically by app:process-escalations. Cascades through the
-     * owner's willreceivers in rank order once each one's 3-day
-     * confirmation window has lapsed without a "mark as received"
-     * (SPEC.md §5) — up to however many ranks their plan allows (1 for
-     * Free, 2 for Basic, 3 for Pro). Every earlier receiver's link/reveal
-     * stays valid regardless (SPEC.md §10.1) — this only adds the next
-     * rank, never revokes an earlier one.
+     * owner's willreceivers in rank order once each one's confirmation
+     * window (config/keeper.php: escalation.confirm_days) has lapsed
+     * without a "mark as received" (SPEC.md §5) — up to however many ranks
+     * their plan allows (1 for Free, 2 for Basic, 3 for Pro). Every earlier
+     * receiver's link/reveal stays valid regardless (SPEC.md §10.1) — this
+     * only adds the next rank, never revokes an earlier one.
      */
     public function processEscalations(?CarbonImmutable $now = null): void
     {
@@ -313,7 +313,7 @@ class CheckInLifecycle
             return;
         }
 
-        if ($latestReveal->sent_at->addDays(3)->gt($now)) {
+        if ($latestReveal->sent_at->addDays(config('keeper.escalation.confirm_days'))->gt($now)) {
             return;
         }
 
