@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Enums\Plan;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CheckInConfirmationController;
 use App\Http\Controllers\ContactController;
@@ -68,6 +69,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/contact', [ContactController::class, 'create'])->name('contact.create');
     Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
+
+    Route::get('/users', [AdminUserController::class, 'index'])->middleware('admin')->name('users.index');
 });
 
 Route::get('/checkin/{token}', [CheckInConfirmationController::class, 'show'])->name('checkin.confirm');

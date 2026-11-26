@@ -30,5 +30,13 @@
                 <p>{{ __('Help & Support') }}</p>
             </a>
         </li>
+        @if (auth()->user()?->is_admin)
+            <li class="nav-item">
+                <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <i class="nav-icon bi bi-person-badge"></i>
+                    <p>{{ __('Users') }}</p>
+                </a>
+            </li>
+        @endif
     </ul>
 </nav>
