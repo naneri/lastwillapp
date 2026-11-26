@@ -53,6 +53,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'plan_change_effective_at' => 'datetime',
             'plan_renews_at' => 'datetime',
             'free_tier_warning_sent_at' => 'datetime',
+            'is_admin' => 'boolean',
         ];
     }
 
