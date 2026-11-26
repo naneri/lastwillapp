@@ -53,8 +53,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/record', [RecordController::class, 'edit'])->name('record.edit');
     Route::patch('/record', [RecordController::class, 'update'])->name('record.update');
 
-    Route::get('/will-receivers', [WillReceiverController::class, 'edit'])->name('will-receivers.edit');
-    Route::put('/will-receivers', [WillReceiverController::class, 'update'])->name('will-receivers.update');
+    Route::get('/will-receivers', [WillReceiverController::class, 'index'])->name('will-receivers.index');
+    Route::get('/will-receivers/{rank}/edit', [WillReceiverController::class, 'edit'])->whereNumber('rank')->name('will-receivers.edit');
+    Route::put('/will-receivers/{rank}', [WillReceiverController::class, 'update'])->whereNumber('rank')->name('will-receivers.update');
+    Route::delete('/will-receivers/{rank}', [WillReceiverController::class, 'destroy'])->whereNumber('rank')->name('will-receivers.destroy');
 
     Route::post('/checkin', [OwnerCheckInController::class, 'store'])->name('owner-checkin.store');
     Route::post('/checkin/pause', [OwnerCheckInController::class, 'pause'])->name('owner-checkin.pause');

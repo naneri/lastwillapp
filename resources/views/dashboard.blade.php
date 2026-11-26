@@ -28,7 +28,7 @@
             You have {{ $willReceiverCount }} trusted contacts but your plan only
             supports {{ $willReceiverLimit }} — the extra
             {{ Str::plural('one', $willReceiverCount - $willReceiverLimit) }} won't be
-            notified. <a href="{{ route('will-receivers.edit') }}">Remove some</a> or
+            notified. <a href="{{ route('will-receivers.index') }}">Remove some</a> or
             <a href="{{ route('billing.show') }}">upgrade</a>.
         </div>
     @endif
@@ -130,7 +130,7 @@
                     <p>Trusted contacts</p>
                 </div>
                 <i class="bi bi-people-fill small-box-icon"></i>
-                <a href="{{ route('will-receivers.edit') }}" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
+                <a href="{{ route('will-receivers.index') }}" class="small-box-footer link-light link-underline-opacity-0 link-underline-opacity-50-hover">
                     Manage contacts <i class="bi bi-link-45deg"></i>
                 </a>
             </div>
@@ -279,7 +279,7 @@
                     </li>
                     <li>
                         {{ $willReceiverCount >= 1 ? '✓' : '○' }}
-                        <a href="{{ route('will-receivers.edit') }}">Add a trusted contact</a>
+                        <a href="{{ route('will-receivers.index') }}">Add a trusted contact</a>
                     </li>
                 </ul>
             </div>
@@ -288,7 +288,7 @@
 
     <div class="d-flex gap-3">
         <a href="{{ route('record.edit') }}" class="btn btn-success">Edit your record</a>
-        <a href="{{ route('will-receivers.edit') }}" class="btn btn-success">Edit trusted contacts</a>
+        <a href="{{ route('will-receivers.index') }}" class="btn btn-success">Edit trusted contacts</a>
     </div>
 
     <script>

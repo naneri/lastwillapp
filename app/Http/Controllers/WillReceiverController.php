@@ -10,66 +10,85 @@ use Illuminate\View\View;
 
 class WillReceiverController extends Controller
 {
-    public function edit(Request $request): View
+    public function index(Request $request): View
     {
         $owner = $request->user();
         $limit = $owner->plan->willReceiverLimit();
 
-        return view('will-receivers.edit', [
+        return view('will-receivers.index', [
             'limit' => $limit,
             'willReceivers' => $owner->willReceivers()->get()->keyBy('rank'),
-            'allowsCustomMessages' => $owner->plan->allowsCustomMessages(),
             'overLimitCount' => max(0, $owner->willReceivers()->count() - $limit),
         ]);
     }
 
-    public function update(Request $request, CheckInLifecycle $lifecycle): RedirectResponse
+    public function edit(Request $request, int $rank): View
     {
         $owner = $request->user();
-        $limit = $owner->plan->willReceiverLimit();
-        $allowsMessages = $owner->plan->allowsCustomMessages();
 
-        // Only ranks up to the owner's current plan limit can be
-        // submitted (SPEC.md §12) — the edit form never renders fields
-        // beyond this, so anything further is ignored, not validated.
-        $rules = [];
-        for ($rank = 1; $rank <= $limit; $rank++) {
-            $rules["receivers.$rank.name"] = ['nullable', 'string', 'max:255'];
-            $rules["receivers.$rank.email"] = [$rank === 1 ? 'required' : 'nullable', 'email:rfc,dns', 'max:255'];
-            $rules["receivers.$rank.message"] = ['nullable', 'string', 'max:5000'];
-        }
+        abort_unless($rank >= 1 && $rank <= $owner->plan->willReceiverLimit(), 404);
 
-        $validated = $request->validate($rules);
+        return view('will-receivers.edit', [
+            'rank' => $rank,
+            'receiver' => $owner->willReceivers()->where('rank', $rank)->first(),
+            'allowsCustomMessages' => $owner->plan->allowsCustomMessages(),
+        ]);
+    }
 
-        $emails = collect($validated['receivers'] ?? [])->pluck('email')->filter();
+    public function update(Request $request, int $rank, CheckInLifecycle $lifecycle): RedirectResponse
+    {
+        $owner = $request->user();
 
-        if ($emails->count() !== $emails->unique()->count()) {
+        abort_unless($rank >= 1 && $rank <= $owner->plan->willReceiverLimit(), 404);
+
+        $validated = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email:rfc,dns',
+                'max:255',
+                function (string $attribute, mixed $value, \Closure $fail) use ($owner): void {
+                    if (strcasecmp($value, $owner->email) === 0) {
+                        $fail("You can't add your own email address as a trusted contact.");
+                    }
+                },
+            ],
+            'message' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $emailTaken = $owner->willReceivers()
+            ->where('rank', '!=', $rank)
+            ->where('email', $validated['email'])
+            ->exists();
+
+        if ($emailTaken) {
             throw ValidationException::withMessages([
-                'receivers' => 'Each trusted contact needs a different email address.',
+                'email' => 'Each trusted contact needs a different email address.',
             ]);
         }
 
-        for ($rank = 1; $rank <= $limit; $rank++) {
-            $data = $validated['receivers'][$rank] ?? null;
-
-            if (blank($data['email'] ?? null)) {
-                $owner->willReceivers()->where('rank', $rank)->delete();
-
-                continue;
-            }
-
-            $owner->willReceivers()->updateOrCreate(
-                ['rank' => $rank],
-                [
-                    'name' => $data['name'] ?? null,
-                    'email' => $data['email'],
-                    'message' => $allowsMessages ? ($data['message'] ?? null) : null,
-                ],
-            );
-        }
+        $owner->willReceivers()->updateOrCreate(
+            ['rank' => $rank],
+            [
+                'name' => $validated['name'] ?? null,
+                'email' => $validated['email'],
+                'message' => $owner->plan->allowsCustomMessages() ? ($validated['message'] ?? null) : null,
+            ],
+        );
 
         $lifecycle->activateIfReady($owner);
 
-        return redirect()->route('will-receivers.edit')->with('status', 'will-receivers-updated');
+        return redirect()->route('will-receivers.index')->with('status', 'will-receivers-updated');
+    }
+
+    public function destroy(Request $request, int $rank): RedirectResponse
+    {
+        $owner = $request->user();
+
+        abort_unless($rank > 1 && $rank <= $owner->plan->willReceiverLimit(), 404);
+
+        $owner->willReceivers()->where('rank', $rank)->delete();
+
+        return redirect()->route('will-receivers.index')->with('status', 'will-receivers-removed');
     }
 }

@@ -13,7 +13,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('will-receivers.edit') }}" class="nav-link {{ request()->routeIs('will-receivers.*') ? 'active' : '' }}">
+            <a href="{{ route('will-receivers.index') }}" class="nav-link {{ request()->routeIs('will-receivers.*') ? 'active' : '' }}">
                 <i class="nav-icon bi bi-people"></i>
                 <p>{{ __('Trusted Contacts') }}</p>
             </a>
