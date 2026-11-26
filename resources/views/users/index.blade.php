@@ -10,6 +10,7 @@
                     <tr>
                         <th>{{ __('Email') }}</th>
                         <th>{{ __('Tier') }}</th>
+                        <th>{{ __('Email verified') }}</th>
                         <th>{{ __('Registered') }}</th>
                     </tr>
                 </thead>
@@ -18,6 +19,11 @@
                         <tr>
                             <td>{{ $user->email }}</td>
                             <td>{{ $user->plan->label() }}</td>
+                            <td>
+                                @if ($user->email_verified_at)
+                                    <i class="bi bi-check-circle-fill text-success"></i>
+                                @endif
+                            </td>
                             <td>{{ $user->created_at->format('Y-m-d H:i') }}</td>
                         </tr>
                     @endforeach

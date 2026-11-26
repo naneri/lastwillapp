@@ -23,6 +23,17 @@ class AdminUserControllerTest extends TestCase
         $response->assertSee('Pro');
     }
 
+    public function test_users_list_shows_a_checkmark_only_for_verified_emails(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        User::factory()->unverified()->create();
+
+        $response = $this->actingAs($admin)->get('/users');
+
+        $response->assertOk();
+        $this->assertSame(1, substr_count($response->getContent(), 'bi-check-circle-fill'));
+    }
+
     public function test_non_admin_cannot_view_the_users_list(): void
     {
         $owner = User::factory()->create(['is_admin' => false]);
