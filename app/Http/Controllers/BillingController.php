@@ -82,6 +82,23 @@ class BillingController extends Controller
     }
 
     /**
+     * Landed on right after a first-time Paddle checkout completes
+     * (billing.show's client-side JS redirects here) — exists purely to
+     * give ad-platform conversion tags a dedicated page to fire from,
+     * since a page that's reached only on a successful purchase is what
+     * Google Ads/Analytics expect for "visited after conversion" tracking.
+     */
+    public function thankYou(Request $request): View
+    {
+        $plan = Plan::tryFrom((string) $request->query('plan'));
+
+        return view('billing.thank-you', [
+            'plan' => $plan,
+            'transactionId' => $request->query('transaction_id'),
+        ]);
+    }
+
+    /**
      * Polled by billing.show after a successful checkout: the overlay's
      * own "completed" event fires client-side before Paddle's webhook has
      * necessarily reached us, so the page can't just reload once and trust

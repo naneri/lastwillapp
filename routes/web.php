@@ -63,6 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/checkin/pause', [OwnerCheckInController::class, 'pause'])->name('owner-checkin.pause');
 
     Route::get('/billing', [BillingController::class, 'show'])->name('billing.show');
+    Route::get('/billing/thank-you', [BillingController::class, 'thankYou'])->name('billing.thank-you');
     Route::get('/billing/status', [BillingController::class, 'status'])->name('billing.status');
     Route::post('/billing/upgrade/{plan}', [BillingController::class, 'upgrade'])->name('billing.upgrade');
     Route::post('/billing/portal', [BillingController::class, 'portal'])->name('billing.portal');

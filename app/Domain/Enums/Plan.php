@@ -45,4 +45,18 @@ enum Plan: string
             self::Pro => 'Pro',
         };
     }
+
+    /**
+     * Price in USD per year, matching billing.show's plan cards — used
+     * server-side so a purchase's reported value for ad conversion
+     * tracking can't be influenced by anything client-controlled.
+     */
+    public function price(): float
+    {
+        return match ($this) {
+            self::Free => 0.0,
+            self::Basic => 5.0,
+            self::Pro => 20.0,
+        };
+    }
 }

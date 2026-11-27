@@ -117,6 +117,7 @@
                                     type="button"
                                     class="btn btn-dark w-100 mb-3 paddle-checkout-button"
                                     data-price-id="{{ $prices[$plan->value] ?? '' }}"
+                                    data-plan="{{ $plan->value }}"
                                     @disabled(blank($prices[$plan->value] ?? null))
                                 >
                                     Upgrade
@@ -220,10 +221,23 @@
             // webhook is unusually slow or never arrives.
             const planAtPageLoad = @json($owner->plan->value);
 
+            // Set when a checkout is opened, read once it completes — lets
+            // the redirect below say which plan was just bought without
+            // trusting anything Paddle's client-side event itself reports.
+            let pendingPlan = null;
+            let pendingTransactionId = '';
+
+            function goToThankYouPage() {
+                Paddle.Checkout.close();
+
+                const params = new URLSearchParams({ plan: pendingPlan ?? '', transaction_id: pendingTransactionId });
+
+                window.location.href = @json(route('billing.thank-you', [], false)) + '?' + params.toString();
+            }
+
             function waitForPlanChangeThenReload(attempt = 0) {
                 if (attempt >= 20) {
-                    Paddle.Checkout.close();
-                    window.location.reload();
+                    goToThankYouPage();
                     return;
                 }
 
@@ -237,8 +251,7 @@
                     .then(function (response) { return response.json(); })
                     .then(function (data) {
                         if (data.plan !== planAtPageLoad) {
-                            Paddle.Checkout.close();
-                            window.location.reload();
+                            goToThankYouPage();
                         } else {
                             setTimeout(function () { waitForPlanChangeThenReload(attempt + 1); }, 1000);
                         }
@@ -249,6 +262,7 @@
                 token: @json($clientToken),
                 eventCallback: function (event) {
                     if (event.name === 'checkout.completed') {
+                        pendingTransactionId = event.data?.transaction_id ?? event.data?.id ?? '';
                         waitForPlanChangeThenReload();
                     }
                 },
@@ -261,6 +275,8 @@
                     if (!priceId) {
                         return;
                     }
+
+                    pendingPlan = button.dataset.plan;
 
                     Paddle.Checkout.open({
                         items: [{ priceId, quantity: 1 }],

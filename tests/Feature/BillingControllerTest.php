@@ -79,4 +79,26 @@ class BillingControllerTest extends TestCase
         $response->assertRedirect(route('billing.show'));
         $this->assertSame(Plan::Basic, $owner->fresh()->plan);
     }
+
+    public function test_thank_you_page_fires_the_conversion_event_with_the_plans_server_side_price(): void
+    {
+        $owner = User::factory()->create(['plan' => Plan::Basic]);
+
+        $response = $this->actingAs($owner)->get('/billing/thank-you?plan=basic&transaction_id=txn_123');
+
+        $response->assertOk();
+        $response->assertSee('conversion_event_purchase', false);
+        $response->assertSee('value: 5', false);
+        $response->assertSee('transaction_id: "txn_123"', false);
+    }
+
+    public function test_thank_you_page_does_not_fire_the_conversion_event_without_a_valid_plan(): void
+    {
+        $owner = User::factory()->create(['plan' => Plan::Basic]);
+
+        $response = $this->actingAs($owner)->get('/billing/thank-you');
+
+        $response->assertOk();
+        $response->assertDontSee('conversion_event_purchase', false);
+    }
 }
