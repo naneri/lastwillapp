@@ -14,6 +14,7 @@ class RecordController extends Controller
     {
         return view('record.edit', [
             'record' => $request->user()->record,
+            'plan' => $request->user()->plan,
             'maxVisibleLength' => $request->user()->plan->recordCharacterLimit(),
         ]);
     }

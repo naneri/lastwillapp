@@ -29,7 +29,17 @@
                 <div class="mb-3">
                     <div class="d-flex justify-content-between align-items-end mb-2">
                         <x-input-label for="body" value="{{ __('Record') }}" class="mb-0" />
-                        <span id="record-counter" class="text-muted small"></span>
+                        <span>
+                            <span id="record-counter" class="text-muted small"></span>
+                            @if ($plan === \App\Domain\Enums\Plan::Free)
+                                <span
+                                    data-bs-toggle="tooltip"
+                                    data-bs-title="{{ __('Paid plans allow up to :limit characters.', ['limit' => number_format(\App\Domain\Enums\Plan::Basic->recordCharacterLimit())]) }}"
+                                >
+                                    <i class="bi bi-info-circle text-muted"></i>
+                                </span>
+                            @endif
+                        </span>
                     </div>
                     <div id="record-editor" style="display: none;"></div>
                     <textarea id="body" name="body" rows="12" class="form-control">{{ old('body', $record?->body) }}</textarea>
@@ -46,6 +56,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new bootstrap.Tooltip(el));
+
             var textarea = document.getElementById('body');
             var editorEl = document.getElementById('record-editor');
             var counterEl = document.getElementById('record-counter');

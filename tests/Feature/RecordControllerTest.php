@@ -46,4 +46,24 @@ class RecordControllerTest extends TestCase
         $this->actingAs($owner)->patch('/record', ['body' => str_repeat('A', 1001)])
             ->assertSessionHasErrors('body');
     }
+
+    public function test_free_owner_sees_a_tooltip_about_higher_paid_plan_limits(): void
+    {
+        $owner = User::factory()->create(['plan' => Plan::Free]);
+
+        $response = $this->actingAs($owner)->get('/record');
+
+        $response->assertOk();
+        $response->assertSee('Paid plans allow up to 30,000 characters.');
+    }
+
+    public function test_paid_owner_does_not_see_the_record_length_tooltip(): void
+    {
+        $owner = User::factory()->create(['plan' => Plan::Basic]);
+
+        $response = $this->actingAs($owner)->get('/record');
+
+        $response->assertOk();
+        $response->assertDontSee('Paid plans allow up to');
+    }
 }
