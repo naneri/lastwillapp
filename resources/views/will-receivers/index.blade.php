@@ -49,5 +49,21 @@
                 <a href="{{ route('will-receivers.edit', $rank) }}" class="btn btn-sm btn-success">{{ $receiver ? 'Edit' : 'Add contact' }}</a>
             </div>
         @endfor
+
+        @if ($limit < 2)
+            <div class="list-group-item d-flex justify-content-between align-items-center bg-light opacity-50" style="border-style: dashed; border-color: #adb5bd;">
+                <div>
+                    <div class="fw-semibold">2nd contact <span class="text-muted fw-normal">(optional)</span></div>
+                    <div class="small text-muted">Only available on the Basic plan or higher.</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-success" disabled>Add contact</button>
+            </div>
+        @endif
     </div>
+
+    @if ($limit < 2)
+        <p class="text-muted small mt-2">
+            <a href="{{ route('billing.show') }}">Upgrade to Basic</a> to add a second trusted contact.
+        </p>
+    @endif
 </x-app-layout>

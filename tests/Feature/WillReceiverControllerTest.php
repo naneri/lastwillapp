@@ -166,4 +166,25 @@ class WillReceiverControllerTest extends TestCase
         $response->assertOk();
         $response->assertSee('Details required');
     }
+
+    public function test_free_owner_sees_a_locked_teaser_for_the_second_contact(): void
+    {
+        $owner = User::factory()->create(['plan' => Plan::Free]);
+
+        $response = $this->actingAs($owner)->get('/will-receivers');
+
+        $response->assertOk();
+        $response->assertSee('Only available on the Basic plan or higher.');
+        $response->assertSee('Upgrade to Basic');
+    }
+
+    public function test_basic_owner_does_not_see_the_second_contact_teaser(): void
+    {
+        $owner = User::factory()->create(['plan' => Plan::Basic]);
+
+        $response = $this->actingAs($owner)->get('/will-receivers');
+
+        $response->assertOk();
+        $response->assertDontSee('Only available on the Basic plan or higher.');
+    }
 }
