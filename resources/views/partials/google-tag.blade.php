@@ -1,4 +1,4 @@
-@if (app()->environment('production'))
+@if (app()->environment('prod'))
     <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-5WMWQH4K"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
